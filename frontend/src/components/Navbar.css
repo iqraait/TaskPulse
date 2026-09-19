@@ -1,0 +1,212 @@
+.navbar-container {
+  height: 80px;
+  background: var(--bg-navbar);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+}
+
+.navbar-search {
+  position: relative;
+  width: 360px;
+}
+
+.navbar-search .search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.navbar-search input {
+  width: 100%;
+  padding: 11px 18px 11px 42px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.navbar-search input:focus {
+  border-color: var(--primary);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.dept-chat-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.dept-chat-btn:hover {
+  background: #d1fae5;
+  border-color: #059669;
+  color: #047857;
+}
+
+.chat-btn-icon {
+  color: #059669;
+  font-size: 1rem;
+}
+
+.chat-dept-tag {
+  font-size: 0.725rem;
+  background: #ffffff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #047857;
+  font-weight: 700;
+  border: 1px solid #a7f3d0;
+}
+
+.icon-btn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: #f8fafc;
+  color: #059669;
+  border-color: #cbd5e1;
+}
+
+.notif-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* User Details Pill - Pepper & Salt High Contrast */
+.navbar-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px 6px 8px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.navbar-user-card:hover {
+  border-color: #059669;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.12);
+}
+
+.navbar-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+}
+
+.navbar-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.navbar-username {
+  font-weight: 800;
+  font-size: 0.875rem;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.navbar-role-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logout-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  transition: color 0.2s ease;
+}
+
+.navbar-logout-btn:hover {
+  color: #dc2626;
+}
+
+/* Mobile Responsiveness for Navbar */
+@media (max-width: 900px) {
+  .navbar-container {
+    padding: 0 20px;
+    height: 72px;
+  }
+  .navbar-search {
+    width: 200px;
+  }
+  .dept-chat-btn span {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar-search {
+    display: none;
+  }
+  .navbar-user-info {
+    display: none;
+  }
+}

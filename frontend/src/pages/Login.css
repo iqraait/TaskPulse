@@ -1,0 +1,412 @@
+/* ==========================================================================
+   Login Page — Attachment 3 Big Design & Interactive Calendar
+   ========================================================================== */
+
+.login-attachment3-wrapper {
+  min-height: 100vh;
+  width: 100vw;
+  background-color: #201311; /* Warm Espresso Background from Attachment 2 */
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(245, 158, 11, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(217, 119, 6, 0.15) 0%, transparent 45%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+/* BIG Split Card Container */
+.login-attachment3-card-big {
+  width: 100%;
+  max-width: 1240px; /* BIGGER CONTAINER */
+  min-height: 640px;
+  background: #fcf9f2; /* Soft Cream Warm Container from Attachment 3 */
+  border-radius: 40px;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.4);
+  display: grid;
+  grid-template-columns: 1.15fr 1.35fr;
+  overflow: hidden;
+  padding: 20px;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+@media (max-width: 1024px) {
+  .login-attachment3-card-big {
+    grid-template-columns: 1fr;
+    max-width: 580px;
+  }
+}
+
+/* Left Form Pane - Spacious */
+.login-left-pane-big {
+  padding: 44px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Top Brand Badge */
+.brand-pill-badge-big {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 22px 8px 10px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  width: fit-content;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.brand-pill-icon-big {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.3);
+}
+
+.brand-pill-name-big {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #1c100e;
+}
+
+.login-heading-group-big {
+  margin: 32px 0 24px;
+}
+
+.login-heading-group-big h2 {
+  font-size: 2.2rem; /* BIGGER HEADING */
+  font-weight: 800;
+  color: #1c100e;
+  letter-spacing: -0.02em;
+}
+
+.login-heading-group-big p {
+  font-size: 0.975rem;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+.login-form-attachment3-big {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group-pill {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label-pill {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #4b5563;
+  margin-left: 6px;
+}
+
+.input-pill-wrap {
+  position: relative;
+}
+
+.pill-input-icon-big {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 1.1rem;
+}
+
+.input-pill-big {
+  width: 100%;
+  padding: 15px 24px 15px 54px; /* BIGGER INPUT PADDING */
+  background: #f3f4f6;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  color: #111827;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input-pill-big:focus {
+  background: #ffffff;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
+}
+
+.toggle-pw-pill-big {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 1.05rem;
+}
+
+.btn-submit-gold-pill-big {
+  width: 100%;
+  padding: 16px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+  color: #1c100e;
+  font-weight: 800;
+  font-size: 1.05rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+
+.btn-submit-gold-pill-big:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.5);
+}
+
+/* Social Buttons Row */
+.social-pill-row-big {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.social-pill-btn-big {
+  padding: 12px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.social-pill-btn-big:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.login-footer-pill-big {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.825rem;
+  color: #6b7280;
+  margin-top: 28px;
+  padding-top: 18px;
+}
+
+.login-footer-pill-big a {
+  color: #1c100e;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.terms-link {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Right Hero Pane - Bigger */
+.login-right-pane-big {
+  position: relative;
+  border-radius: 32px;
+  overflow: hidden;
+  min-height: 580px;
+}
+
+@media (max-width: 1024px) {
+  .login-right-pane-big {
+    display: none;
+  }
+}
+
+.hero-image-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.hero-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-overlay-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(28, 16, 14, 0.25) 0%, rgba(28, 16, 14, 0.65) 100%);
+}
+
+/* Floating Widgets matching Attachment 3 */
+.floating-widget {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.widget-top-big {
+  top: 28px;
+  left: 28px;
+  padding: 16px 24px;
+  background: #fef08a;
+  border-color: #fde047;
+  color: #854d0e;
+}
+
+.widget-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  display: block;
+}
+
+.widget-time {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  margin-top: 4px;
+  display: block;
+}
+
+/* WORKING INTERACTIVE CALENDAR WIDGET */
+.widget-mid-calendar-big {
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 18px;
+  background: rgba(28, 16, 14, 0.65);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  width: calc(100% - 48px);
+  max-width: 440px;
+}
+
+.cal-header-bar {
+  font-size: 0.775rem;
+  font-weight: 800;
+  color: #fef3c7;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.03em;
+}
+
+.cal-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-day-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid transparent;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cal-day-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.cal-day-btn.active {
+  background: #ffffff;
+  color: #1c100e;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  border-color: #f59e0b;
+}
+
+.day-label {
+  font-size: 0.675rem;
+  opacity: 0.8;
+}
+
+.date-label {
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.widget-bottom-meeting-big {
+  bottom: 28px;
+  left: 28px;
+  padding: 18px 24px;
+  background: #ffffff;
+  color: #111827;
+  min-width: 260px;
+}
+
+.meeting-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  display: block;
+}
+
+.meeting-time {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 4px;
+  display: block;
+}
+
+.avatar-stack {
+  display: flex;
+  margin-top: 10px;
+}
+
+.av-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  font-size: 0.725rem;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.av-circle:first-child { margin-left: 0; }

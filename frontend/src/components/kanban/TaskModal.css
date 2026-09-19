@@ -1,0 +1,602 @@
+/* ==========================================================================
+   TaskModal.css — Dedicated Enterprise Ultra-Spacious Modal System
+   ========================================================================== */
+
+/* High specificity overlay */
+.modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(8px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 99999 !important;
+  padding: 24px !important;
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Modal Content Container */
+.modal-content.task-detail-modal-large {
+  width: 95vw !important;
+  max-width: 1180px !important;
+  height: 88vh !important;
+  max-height: 88vh !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  margin: auto !important;
+}
+
+/* Modal Header */
+.modal-header-enterprise {
+  background: #f8fafc;
+  padding: 24px 32px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.task-modal-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.header-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.task-id-badge {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 5px 14px;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dept-tag-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 5px 14px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+.modal-ticket-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+  margin: 0;
+  word-break: break-word;
+}
+
+.icon-close-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.icon-close-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+  transform: rotate(90deg);
+}
+
+/* Modal Body */
+.modal-body-spacious {
+  padding: 32px !important;
+  flex: 1 !important;
+  overflow-y: auto !important;
+  background: #ffffff;
+}
+
+.task-modal-grid-layout {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 36px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .task-modal-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.modal-column-left {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.task-detail-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.block-label-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.block-label {
+  font-size: 0.775rem;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-reassign-toggle {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.775rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-reassign-toggle:hover, .btn-reassign-toggle.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.task-description-box {
+  font-size: 0.95rem;
+  color: #1e293b;
+  background: #f8fafc;
+  padding: 18px 22px;
+  border-radius: 14px;
+  line-height: 1.65;
+  border: 1px solid #e2e8f0;
+  min-height: 80px;
+  white-space: pre-wrap;
+}
+
+/* Dual Staff Assignee Grid (Locked Display) */
+.dual-staff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.staff-assignee-card {
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.staff-assignee-card.locked-card {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  position: relative;
+}
+
+.primary-staff-card.locked-card {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.card-top-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-role-title {
+  font-size: 0.725rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.primary-staff-card .card-role-title { color: #2563eb; }
+.secondary-staff-card .card-role-title { color: #64748b; }
+
+.locked-pill {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #cbd5e1;
+}
+
+.staff-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.staff-avatar-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.staff-avatar-icon.primary { color: #2563eb; }
+.staff-avatar-icon.secondary { color: #64748b; }
+
+.staff-text-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.staff-username-str {
+  font-size: 0.975rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.staff-role-subtext {
+  font-size: 0.775rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Dedicated Reassign Action Panel */
+.reassign-action-panel {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.panel-title-row h4 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0369a1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+}
+
+.panel-subtitle {
+  font-size: 0.775rem;
+  color: #0284c7;
+}
+
+/* Mini Compact Audit Log UI for Admins */
+.compact-flow-ui {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.mini-timeline-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.mini-timeline-step:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.step-badge-number {
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.mini-timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.log-action-str {
+  font-size: 0.85rem;
+  color: #0f172a;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.log-time-str {
+  font-size: 0.725rem;
+  color: #64748b;
+}
+
+/* Attachment Viewer */
+.attachment-viewer-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.attachment-image-wrap {
+  position: relative;
+  max-height: 340px;
+  overflow: hidden;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-img-display {
+  width: 100%;
+  max-height: 340px;
+  object-fit: contain;
+}
+
+.image-overlay-actions {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+}
+
+.attachment-file-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  background: #f8fafc;
+}
+
+.file-info-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.file-icon-lg {
+  font-size: 2.2rem;
+  color: #2563eb;
+}
+
+.file-name-str {
+  display: block;
+  font-size: 0.925rem;
+  color: #0f172a;
+}
+
+.file-sub-str {
+  display: block;
+  font-size: 0.775rem;
+  color: #64748b;
+}
+
+.empty-attachment-notice {
+  padding: 16px 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.attachment-upload-trigger {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.upload-ready-tag {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+/* Controls Grid */
+.form-controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Meta Footer */
+.ticket-meta-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  font-size: 0.85rem;
+  color: #64748b;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.ticket-meta-footer strong {
+  color: #0f172a;
+}
+
+/* Right Column: Chat Section */
+.modal-column-right {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 480px;
+}
+
+.chat-section-header {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-messages-container {
+  flex: 1;
+  max-height: 420px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-right: 6px;
+}
+
+.no-chat-msg {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.chat-bubble-card {
+  background: #ffffff;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border-left: 4px solid #2563eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.chat-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.chat-author-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.author-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.chat-timestamp {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.chat-text-content {
+  font-size: 0.875rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.chat-input-form {
+  display: flex;
+  gap: 12px;
+}
+
+.chat-input-form input {
+  flex: 1;
+  padding: 12px 18px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  color: #0f172a;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.chat-input-form input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Modal Footer */
+.modal-footer-enterprise {
+  background: #f8fafc;
+  padding: 20px 32px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.footer-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
