@@ -25,10 +25,22 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    pending_tasks_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'role', 'department', 'privileges', 'created_by', 'is_superuser']
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name', 'password', 
+            'role', 'department', 'privileges', 'created_by', 'is_superuser', 
+            'pending_tasks_count'
+        ]
+
+    def get_pending_tasks_count(self, obj):
+        from tasks.models import Task
+        from django.db.models import Q
+        return Task.objects.filter(
+            Q(assigned_to=obj) | Q(assigned_to_secondary=obj)
+        ).filter(status__in=['pending', 'progress']).count()
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)

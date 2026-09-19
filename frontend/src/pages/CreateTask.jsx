@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import { FaPlusCircle, FaArrowLeft, FaCheck, FaPaperclip, FaFileAlt, FaImage, FaTrashAlt, FaUsers } from "react-icons/fa";
+import { FaPlusCircle, FaArrowLeft, FaCheck, FaPaperclip, FaFileAlt, FaImage, FaTrashAlt, FaUsers, FaExclamationTriangle } from "react-icons/fa";
 import "./CreateTask.css";
 
 function CreateTask() {
@@ -50,6 +50,12 @@ function CreateTask() {
     setAttachmentFile(null);
     setFilePreview(null);
   };
+
+  const primaryUser = users.find(u => u.id.toString() === assignedTo);
+  const secondaryUser = users.find(u => u.id.toString() === assignedToSecondary);
+
+  const primaryHighLoad = primaryUser && primaryUser.pending_tasks_count > 3;
+  const secondaryHighLoad = secondaryUser && secondaryUser.pending_tasks_count > 3;
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -212,10 +218,15 @@ function CreateTask() {
                     <option value="">Unassigned</option>
                     {users.map((u) => (
                       <option key={u.id} value={u.id}>
-                        👤 {u.username} ({u.role || "staff"}) — {u.department || "General"}
+                        👤 {u.username} ({u.role || "staff"}) — {u.department || "General"} {u.pending_tasks_count > 3 ? `⚠️ (${u.pending_tasks_count} Pending Tasks)` : `(${u.pending_tasks_count || 0} active)`}
                       </option>
                     ))}
                   </select>
+                  {primaryHighLoad && (
+                    <div className="workload-warning-banner">
+                      <FaExclamationTriangle /> <strong>Workload Warning:</strong> {primaryUser.username} currently has <strong>{primaryUser.pending_tasks_count} active pending tasks</strong>!
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -228,10 +239,15 @@ function CreateTask() {
                     <option value="">None (Single Assignee)</option>
                     {users.filter(u => u.id.toString() !== assignedTo).map((u) => (
                       <option key={u.id} value={u.id}>
-                        👥 {u.username} ({u.role || "staff"}) — {u.department || "General"}
+                        👥 {u.username} ({u.role || "staff"}) — {u.department || "General"} {u.pending_tasks_count > 3 ? `⚠️ (${u.pending_tasks_count} Pending Tasks)` : `(${u.pending_tasks_count || 0} active)`}
                       </option>
                     ))}
                   </select>
+                  {secondaryHighLoad && (
+                    <div className="workload-warning-banner">
+                      <FaExclamationTriangle /> <strong>Workload Warning:</strong> {secondaryUser.username} currently has <strong>{secondaryUser.pending_tasks_count} active pending tasks</strong>!
+                    </div>
+                  )}
                 </div>
               </div>
 

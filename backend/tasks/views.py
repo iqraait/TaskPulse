@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from django.db.models import Q, Count
 from django.utils import timezone
 
@@ -172,6 +172,30 @@ def subscribe_push(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
+def public_ticket_schedule(request):
+    """
+    Public Endpoint for Login Page to view ticket creation dates & pending status before login.
+    """
+    recent_tasks = Task.objects.all().order_by("-created_at")[:20]
+    date_map = {}
+    for task in recent_tasks:
+        date_str = task.created_at.strftime("%Y-%m-%d")
+        if date_str not in date_map:
+            date_map[date_str] = []
+        date_map[date_str].append({
+            "id": task.id,
+            "ticket_code": task.ticket_code or f"#TK-{task.id}",
+            "title": task.title,
+            "status": task.status,
+            "department": task.department,
+            "created_at_time": task.created_at.strftime("%H:%M"),
+            "assigned_to": task.assigned_to.username if task.assigned_to else "Unassigned",
+        })
+    return Response(date_map)
+
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticatedOrReadOnly])
 def dashboard_stats(request):
     user = request.user
@@ -192,12 +216,12 @@ def dashboard_stats(request):
     progress = tasks.filter(status="progress").count()
     done = tasks.filter(status="done").count()
     resolved = done
-    closed = tasks.filter(status="done", priority="low").count() or (done // 2 if done > 0 else 0)
+    closed = tasks.filter(status="closed").count()
     high_priority = tasks.filter(priority="high").count()
     med_priority = tasks.filter(priority="medium").count()
     low_priority = tasks.filter(priority="low").count()
 
-    # SLA breaches (due_date in past & not done)
+    # SLA breaches (due_date in past & not done/closed)
     now = timezone.now().date()
     sla_breaches = tasks.filter(status__in=["pending", "progress"], due_date__lt=now).count()
 

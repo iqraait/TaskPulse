@@ -18,7 +18,9 @@ import {
   FaKey,
   FaCheckSquare,
   FaSquare,
-  FaCheckDouble
+  FaCheckDouble,
+  FaTasks,
+  FaExclamationTriangle
 } from "react-icons/fa";
 import "./StaffManagement.css";
 
@@ -160,7 +162,8 @@ function StaffManagement() {
         fetchUsers();
       } catch (err) {
         console.error("Delete user error:", err);
-        alert("Failed to delete user.");
+        const errorMsg = err.response?.data?.error || "Failed to delete user.";
+        alert(`❌ CANNOT DELETE STAFF:\n\n${errorMsg}`);
       }
     }
   };
@@ -226,6 +229,14 @@ function StaffManagement() {
                       <span className="dept-pill"><FaBuilding /> {u.department || "General"}</span>
                     </div>
 
+                    {/* Active Assigned Tasks Workload Pill */}
+                    <div className="user-meta-row">
+                      <span className="meta-label">Active Workload:</span>
+                      <span className={`badge ${u.pending_tasks_count > 3 ? 'badge-priority-high' : 'badge-priority-medium'}`}>
+                        <FaTasks /> {u.pending_tasks_count || 0} Active Task(s)
+                      </span>
+                    </div>
+
                     {/* Display Staff Privileges */}
                     <div className="privileges-box-card">
                       <span className="privileges-title"><FaKey /> Granted Features & Access:</span>
@@ -254,6 +265,7 @@ function StaffManagement() {
                       <button
                         className="btn btn-danger btn-sm"
                         onClick={() => handleDeleteUser(u.id, u.username)}
+                        title={u.pending_tasks_count > 0 ? "Cannot delete staff with active tasks" : "Remove User"}
                       >
                         <FaTrash /> Remove User
                       </button>

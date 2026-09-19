@@ -25,13 +25,16 @@ import {
   FaFolderOpen,
   FaLock,
   FaUserEdit,
-  FaCheckCircle
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaBan
 } from "react-icons/fa";
 import "./TaskModal.css";
 
 function TaskModal({ task, onClose, onRefresh, users = [] }) {
   const { user } = useAuth();
   const [status, setStatus] = useState(task?.status || "pending");
+  const [closureReason, setClosureReason] = useState(task?.closure_reason || "");
   const [priority, setPriority] = useState(task?.priority || "low");
   const [category, setCategory] = useState(task?.category || "task");
   
@@ -57,6 +60,7 @@ function TaskModal({ task, onClose, onRefresh, users = [] }) {
   useEffect(() => {
     if (task) {
       setStatus(task.status);
+      setClosureReason(task.closure_reason || "");
       setPriority(task.priority);
       setCategory(task.category || "task");
       setNewPrimary(task.assigned_to || "");
@@ -84,12 +88,21 @@ function TaskModal({ task, onClose, onRefresh, users = [] }) {
     return `http://localhost:8000${url.startsWith("/") ? "" : "/"}${url}`;
   };
 
+  const selectedPrimaryUser = users.find(u => u.id.toString() === newPrimary?.toString());
+  const selectedSecondaryUser = users.find(u => u.id.toString() === newSecondary?.toString());
+
   const handleUpdate = async () => {
+    if (status === "closed" && !closureReason.trim()) {
+      alert("Please enter a closure description/reason when setting ticket status to Closed.");
+      return;
+    }
+
     try {
       setSaving(true);
       if (newAttachment && canEditAdminFields) {
         const formData = new FormData();
         formData.append("status", status);
+        formData.append("closure_reason", closureReason);
         formData.append("priority", priority);
         formData.append("category", category);
         if (newPrimary) formData.append("assigned_to", parseInt(newPrimary));
@@ -103,6 +116,7 @@ function TaskModal({ task, onClose, onRefresh, users = [] }) {
       } else {
         await api.patch(`tasks/${task.id}/`, {
           status,
+          closure_reason: closureReason,
           priority: canEditAdminFields ? priority : task.priority,
           category: canEditAdminFields ? category : task.category,
           assigned_to: newPrimary ? parseInt(newPrimary) : null,
@@ -186,6 +200,7 @@ function TaskModal({ task, onClose, onRefresh, users = [] }) {
               <span className="task-id-badge">{task.ticket_code || `#TK-${task.id}`}</span>
               <span className="dept-tag-header"><FaBuilding /> {task.department}</span>
               {getPriorityBadgeHeader(task.priority)}
+              {status === "closed" && <span className="badge badge-closed-pill"><FaBan /> Closed / Removed</span>}
             </div>
             <h2 className="modal-ticket-title">{task.title}</h2>
           </div>
@@ -275,10 +290,15 @@ function TaskModal({ task, onClose, onRefresh, users = [] }) {
                         <option value="">Unassigned</option>
                         {users.map((u) => (
                           <option key={u.id} value={u.id}>
-                            👤 {u.username} ({u.role || 'staff'})
+                            👤 {u.username} ({u.role || 'staff'}) {u.pending_tasks_count > 3 ? `⚠️ (${u.pending_tasks_count} Pending Tasks)` : `(${u.pending_tasks_count || 0} active)`}
                           </option>
                         ))}
                       </select>
+                      {selectedPrimaryUser && selectedPrimaryUser.pending_tasks_count > 3 && (
+                        <div className="workload-warning-banner">
+                          <FaExclamationTriangle /> <strong>Workload Warning:</strong> {selectedPrimaryUser.username} currently has <strong>{selectedPrimaryUser.pending_tasks_count} active pending tasks</strong>!
+                        </div>
+                      )}
                     </div>
 
                     <div className="form-group">
@@ -291,10 +311,15 @@ function TaskModal({ task, onClose, onRefresh, users = [] }) {
                         <option value="">None (Single Staff)</option>
                         {users.filter(u => u.id.toString() !== newPrimary?.toString()).map((u) => (
                           <option key={u.id} value={u.id}>
-                            👥 {u.username} ({u.role || 'staff'})
+                            👥 {u.username} ({u.role || 'staff'}) {u.pending_tasks_count > 3 ? `⚠️ (${u.pending_tasks_count} Pending Tasks)` : `(${u.pending_tasks_count || 0} active)`}
                           </option>
                         ))}
                       </select>
+                      {selectedSecondaryUser && selectedSecondaryUser.pending_tasks_count > 3 && (
+                        <div className="workload-warning-banner">
+                          <FaExclamationTriangle /> <strong>Workload Warning:</strong> {selectedSecondaryUser.username} currently has <strong>{selectedSecondaryUser.pending_tasks_count} active pending tasks</strong>!
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -393,6 +418,7 @@ function TaskModal({ task, onClose, onRefresh, users = [] }) {
                     <option value="pending">Pending (Orange)</option>
                     <option value="progress">In Progress (Blue)</option>
                     <option value="done">Done (Green)</option>
+                    <option value="closed">Closed / Cancelled (Gray / Removed)</option>
                   </select>
                 </div>
 
@@ -412,6 +438,22 @@ function TaskModal({ task, onClose, onRefresh, users = [] }) {
                   </select>
                 </div>
               </div>
+
+              {/* Closure Description / Reason when Closing Ticket */}
+              {status === "closed" && (
+                <div className="task-detail-block closure-reason-box">
+                  <label className="form-label"><FaBan /> Ticket Closure Description / Reason *</label>
+                  <textarea
+                    className="form-textarea"
+                    rows="2"
+                    placeholder="Enter reason for closing/cancelling this ticket (e.g., Duplicate ticket, User resolved issue, Cancelled by admin)..."
+                    value={closureReason}
+                    onChange={(e) => setClosureReason(e.target.value)}
+                    disabled={!canReassignOrUpdateStatus}
+                    required
+                  />
+                </div>
+              )}
 
               {/* Footer Meta Row */}
               <div className="ticket-meta-footer">

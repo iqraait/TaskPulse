@@ -51,6 +51,24 @@ class UserViewSet(ModelViewSet):
             is_superuser=(role_requested == 'superadmin')
         )
 
+    def destroy(self, request, *args, **kwargs):
+        user_to_delete = self.get_object()
+
+        # Check active assigned tasks (primary or secondary)
+        from tasks.models import Task
+        active_tasks = Task.objects.filter(
+            Q(assigned_to=user_to_delete) | Q(assigned_to_secondary=user_to_delete)
+        ).filter(status__in=['pending', 'progress'])
+
+        if active_tasks.exists():
+            task_codes = ", ".join([t.ticket_code or f"#{t.id}" for t in active_tasks[:3]])
+            return Response(
+                {'error': f"Cannot delete '{user_to_delete.username}'. They have {active_tasks.count()} active task(s) ({task_codes}) that must be completed or closed first."},
+                status=400
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def me(self, request):
         serializer = self.get_serializer(request.user)

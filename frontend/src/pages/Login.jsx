@@ -1,97 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { FaLock, FaUserCircle, FaEye, FaEyeSlash, FaArrowRight, FaApple, FaGoogle, FaCalendarAlt, FaUsers } from "react-icons/fa";
+import api from "../services/api";
+import { FaLock, FaUserCircle, FaEye, FaEyeSlash, FaArrowRight, FaApple, FaGoogle, FaCalendarAlt, FaTasks, FaClock, FaCheckCircle, FaExclamationCircle, FaUser } from "react-icons/fa";
 import heroImg from "../assets/login_team_hero.png";
 import "./Login.css";
-
-// Interactive daily events schedule dataset
-const SCHEDULE_EVENTS = {
-  22: {
-    topTitle: "Task Review With Team",
-    topTime: "09:30am - 10:30am",
-    bottomTitle: "Design System Workshop",
-    bottomTime: "02:00pm - 03:00pm",
-    avatars: [
-      { id: "JD", bg: "#f59e0b" },
-      { id: "SK", bg: "#0284c7" },
-      { id: "AL", bg: "#059669" }
-    ]
-  },
-  23: {
-    topTitle: "Task Review With Team",
-    topTime: "09:30am - 10:30am",
-    bottomTitle: "Daily Sprint Sync",
-    bottomTime: "12:00pm - 01:00pm",
-    avatars: [
-      { id: "JD", bg: "#f59e0b" },
-      { id: "SK", bg: "#0284c7" },
-      { id: "AL", bg: "#059669" }
-    ]
-  },
-  24: {
-    topTitle: "Architecture Presentation",
-    topTime: "11:00am - 12:30pm",
-    bottomTitle: "Backend Code Review",
-    bottomTime: "03:30pm - 04:30pm",
-    avatars: [
-      { id: "MR", bg: "#7e22ce" },
-      { id: "SK", bg: "#0284c7" }
-    ]
-  },
-  25: {
-    topTitle: "Sprint Planning & Demo",
-    topTime: "10:00am - 11:30am",
-    bottomTitle: "QA Testing Workshop",
-    bottomTime: "04:00pm - 05:00pm",
-    avatars: [
-      { id: "JD", bg: "#f59e0b" },
-      { id: "AL", bg: "#059669" }
-    ]
-  },
-  26: {
-    topTitle: "Product Roadmap Huddle",
-    topTime: "09:00am - 10:00am",
-    bottomTitle: "Security Audit Check",
-    bottomTime: "01:30pm - 02:30pm",
-    avatars: [
-      { id: "SK", bg: "#0284c7" },
-      { id: "MR", bg: "#7e22ce" },
-      { id: "JD", bg: "#f59e0b" }
-    ]
-  },
-  27: {
-    topTitle: "Weekly Retrospective",
-    topTime: "04:00pm - 05:30pm",
-    bottomTitle: "Team Happy Hour",
-    bottomTime: "06:00pm - 07:00pm",
-    avatars: [
-      { id: "JD", bg: "#f59e0b" },
-      { id: "SK", bg: "#0284c7" },
-      { id: "AL", bg: "#059669" },
-      { id: "MR", bg: "#7e22ce" }
-    ]
-  },
-  28: {
-    topTitle: "Weekend Standby Sync",
-    topTime: "10:00am - 11:00am",
-    bottomTitle: "DevOps Pipeline Check",
-    bottomTime: "01:00pm - 02:00pm",
-    avatars: [
-      { id: "SK", bg: "#0284c7" }
-    ]
-  }
-};
-
-const CALENDAR_DAYS = [
-  { dayName: "Sun", date: 22 },
-  { dayName: "Mon", date: 23 },
-  { dayName: "Tue", date: 24 },
-  { dayName: "Wed", date: 25 },
-  { dayName: "Thu", date: 26 },
-  { dayName: "Fri", date: 27 },
-  { dayName: "Sat", date: 28 },
-];
 
 function Login() {
   const navigate = useNavigate();
@@ -103,10 +16,25 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Interactive Calendar Active Day
-  const [selectedDay, setSelectedDay] = useState(23);
+  // Live ticket creation schedule from backend
+  const [ticketSchedule, setTicketSchedule] = useState({});
+  const [selectedDate, setSelectedDate] = useState("");
 
-  const activeSchedule = SCHEDULE_EVENTS[selectedDay] || SCHEDULE_EVENTS[23];
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      try {
+        const res = await api.get("public-schedule/");
+        setTicketSchedule(res.data);
+        const dates = Object.keys(res.data);
+        if (dates.length > 0) {
+          setSelectedDate(dates[0]);
+        }
+      } catch (err) {
+        console.error("Fetch public ticket schedule error:", err);
+      }
+    };
+    fetchSchedule();
+  }, []);
 
   const handleLogin = async (e) => {
     if (e) e.preventDefault();
@@ -130,9 +58,28 @@ function Login() {
     }
   };
 
+  const selectedDateTickets = ticketSchedule[selectedDate] || [];
+  const primaryTicket = selectedDateTickets[0];
+  const secondaryTicket = selectedDateTickets[1];
+
+  const getStatusBadge = (st) => {
+    switch (st) {
+      case "pending":
+        return <span className="badge badge-priority-medium">Pending</span>;
+      case "progress":
+        return <span className="badge badge-staff">In Progress</span>;
+      case "done":
+        return <span className="badge badge-admin">Completed</span>;
+      case "closed":
+        return <span className="badge" style={{background: '#cbd5e1', color: '#334155'}}>Closed</span>;
+      default:
+        return <span className="badge">{st}</span>;
+    }
+  };
+
   return (
     <div className="login-attachment3-wrapper">
-      {/* Big Split Glass Card (Attachment 3 Style) */}
+      {/* Big Split Glass Card */}
       <div className="login-attachment3-card-big">
         {/* Left Form Section */}
         <div className="login-left-pane-big">
@@ -208,53 +155,73 @@ function Login() {
           </div>
         </div>
 
-        {/* Right Hero Image Panel with WORKING Interactive Calendar */}
+        {/* Right Hero Image Panel with LIVE Ticket Created Dates Calendar */}
         <div className="login-right-pane-big">
           <div className="hero-image-wrapper">
             <img src={heroImg} alt="Team Collaboration" className="hero-bg-img" />
             <div className="hero-overlay-gradient"></div>
 
-            {/* Floating Widget 1: Top Task Review (Dynamic based on selected calendar day) */}
+            {/* Floating Widget 1: Top Task Review (Dynamic based on selected creation date) */}
             <div className="floating-widget widget-top-big">
               <div className="widget-header-yellow">
-                <span className="widget-title">{activeSchedule.topTitle}</span>
-                <span className="widget-time">⏰ {activeSchedule.topTime}</span>
+                <span className="widget-title">
+                  {primaryTicket ? `${primaryTicket.ticket_code}: ${primaryTicket.title}` : "System Ticket Activity Overview"}
+                </span>
+                <span className="widget-time">
+                  {primaryTicket ? `👤 ${primaryTicket.assigned_to}` : "No tickets on date"}
+                  {primaryTicket && getStatusBadge(primaryTicket.status)}
+                </span>
               </div>
             </div>
 
-            {/* Floating Widget 2: WORKING Interactive Calendar Bar */}
+            {/* Floating Widget 2: WORKING Interactive Ticket Creation Dates Calendar Bar */}
             <div className="floating-widget widget-mid-calendar-big">
               <div className="cal-header-bar">
-                <FaCalendarAlt className="cal-icon" /> Select Schedule Date:
+                <FaCalendarAlt className="cal-icon" /> Ticket Creation Dates Preview:
               </div>
               <div className="cal-days-grid">
-                {CALENDAR_DAYS.map((d) => (
-                  <button
-                    key={d.date}
-                    type="button"
-                    className={`cal-day-btn ${selectedDay === d.date ? "active" : ""}`}
-                    onClick={() => setSelectedDay(d.date)}
-                    title={`Click to view schedule for ${d.dayName} ${d.date}`}
-                  >
-                    <span className="day-label">{d.dayName}</span>
-                    <strong className="date-label">{d.date}</strong>
-                  </button>
-                ))}
+                {Object.keys(ticketSchedule).length > 0 ? (
+                  Object.keys(ticketSchedule).map((dateStr) => {
+                    const dateObj = new Date(dateStr);
+                    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                    const dayNum = dateObj.getDate();
+                    const pendingCount = ticketSchedule[dateStr].filter(t => t.status === 'pending' || t.status === 'progress').length;
+
+                    return (
+                      <button
+                        key={dateStr}
+                        type="button"
+                        className={`cal-day-btn ${selectedDate === dateStr ? "active" : ""}`}
+                        onClick={() => setSelectedDate(dateStr)}
+                        title={`View ${pendingCount} pending/active tickets created on ${dateStr}`}
+                      >
+                        <span className="day-label">{dayName}</span>
+                        <strong className="date-label">{dayNum}</strong>
+                        {pendingCount > 0 && <span className="pending-dot-badge">{pendingCount}</span>}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <span className="no-dates-label">Loading ticket dates...</span>
+                )}
               </div>
             </div>
 
-            {/* Floating Widget 3: Bottom Meeting Card (Dynamic based on selected calendar day) */}
+            {/* Floating Widget 3: Bottom Secondary Ticket Card */}
             <div className="floating-widget widget-bottom-meeting-big">
-              <span className="meeting-title">{activeSchedule.bottomTitle}</span>
-              <span className="meeting-time">⏰ {activeSchedule.bottomTime}</span>
+              <span className="meeting-title">
+                {secondaryTicket ? `${secondaryTicket.ticket_code}: ${secondaryTicket.title}` : (primaryTicket ? `Department: ${primaryTicket.department}` : "Select a date above to preview pending tickets")}
+              </span>
+              <span className="meeting-time">
+                {secondaryTicket ? `Status: ${secondaryTicket.status.toUpperCase()} | Assigned: ${secondaryTicket.assigned_to}` : `Created Date: ${selectedDate || "Today"}`}
+              </span>
               <div className="avatar-stack">
-                {activeSchedule.avatars.map((av, index) => (
-                  <div key={index} className="av-circle" style={{ background: av.bg }}>
-                    {av.id}
-                  </div>
-                ))}
+                <div className="av-circle" style={{ background: "#2563eb" }}>IT</div>
+                <div className="av-circle" style={{ background: "#7e22ce" }}>HR</div>
+                <div className="av-circle" style={{ background: "#059669" }}>FIN</div>
               </div>
             </div>
+
           </div>
         </div>
       </div>

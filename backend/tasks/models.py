@@ -14,7 +14,8 @@ class Task(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('progress', 'In Progress'),
-        ('done', 'Done')
+        ('done', 'Done'),
+        ('closed', 'Closed')
     )
 
     CATEGORY_CHOICES = (
@@ -32,6 +33,7 @@ class Task(models.Model):
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='task')
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    closure_reason = models.TextField(blank=True, default='')
 
     attachment = models.FileField(upload_to='attachments/', null=True, blank=True)
 

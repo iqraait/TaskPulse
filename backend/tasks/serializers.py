@@ -15,8 +15,6 @@ class CommentSerializer(serializers.ModelSerializer):
 class TaskFlowLogSerializer(serializers.ModelSerializer):
     actor_name = serializers.SerializerMethodField()
 
-    
-
     class Meta:
         model = TaskFlowLog
         fields = ['id', 'task', 'actor', 'actor_name', 'action_type', 'description', 'created_at']
@@ -38,7 +36,7 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = [
             'id', 'ticket_code', 'title', 'description', 'department', 'category', 'priority', 'status',
-            'attachment', 'is_reassigned',
+            'closure_reason', 'attachment', 'is_reassigned',
             'created_by', 'created_by_username',
             'assigned_to', 'assigned_to_username',
             'assigned_to_secondary', 'assigned_to_secondary_username',
