@@ -344,16 +344,31 @@ body {
    Responsive Mobile Viewport Rules (max-width: 768px)
    ========================================================================== */
 @media (max-width: 768px) {
+  html, body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-overflow-scrolling: touch;
+  }
   .app-layout {
-    flex-direction: column;
+    flex-direction: column !important;
+    min-height: 100vh !important;
+    width: 100% !important;
   }
   .main-content {
-    width: 100vw;
-    height: 100vh;
-    padding-bottom: 84px !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: visible !important;
+    padding-bottom: 90px !important;
   }
   .page-container {
-    padding: 16px 12px !important;
+    padding: 14px 10px !important;
+  }
+  .glass-card {
+    padding: 16px 14px !important;
   }
   .modal-overlay {
     padding: 10px;

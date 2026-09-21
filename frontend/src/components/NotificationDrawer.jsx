@@ -17,7 +17,8 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaVolumeMute,
-  FaVolumeUp
+  FaVolumeUp,
+  FaDownload
 } from "react-icons/fa";
 import "./NotificationDrawer.css";
 
@@ -26,22 +27,35 @@ function NotificationDrawer({ isOpen, onClose, onNotificationRead }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
-  
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+
   // Toggle switch state stored in localStorage (default: true)
   const [isNotifEnabled, setIsNotifEnabled] = useState(() => {
     const saved = localStorage.getItem("taskpulse_notif_enabled");
     return saved !== null ? JSON.parse(saved) : true;
   });
 
-  const [browserPermission, setBrowserPermission] = useState("default");
-
   useEffect(() => {
     if (isOpen) {
       fetchNotifications();
     }
-    if ("Notification" in window) {
-      setBrowserPermission(Notification.permission);
+
+    // Capture PWA install prompt event
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setIsPwaInstalled(true);
     }
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+    };
   }, [isOpen]);
 
   const fetchNotifications = async () => {
@@ -64,11 +78,9 @@ function NotificationDrawer({ isOpen, onClose, onNotificationRead }) {
     if (enabled) {
       showToastNotification("Notifications Enabled 🔔", "Real-time alerts active for tickets, todos & chat messages.", "success");
       
-      // Attempt browser notification permission if supported
       if ("Notification" in window && Notification.permission === "default") {
         try {
           const perm = await Notification.requestPermission();
-          setBrowserPermission(perm);
           if (perm === "granted" && 'serviceWorker' in navigator) {
             const reg = await navigator.serviceWorker.ready;
             const sub = await reg.pushManager.getSubscription();
@@ -82,6 +94,21 @@ function NotificationDrawer({ isOpen, onClose, onNotificationRead }) {
       }
     } else {
       showToastNotification("Notifications Muted 🔕", "You can re-enable alerts anytime from this toggle.", "info");
+    }
+  };
+
+  const handleInstallPWA = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        showToastNotification("TaskPulse App Installed 📱", "Check your phone home screen!", "success");
+        setIsPwaInstalled(true);
+      }
+      setDeferredPrompt(null);
+    } else {
+      // Guide for iOS Safari or browsers without native beforeinstallprompt
+      showToastNotification("Add to Home Screen 📱", "On iPhone: Tap Share ➔ Select 'Add to Home Screen'", "info");
     }
   };
 
@@ -211,6 +238,22 @@ function NotificationDrawer({ isOpen, onClose, onNotificationRead }) {
             </label>
           </div>
         </div>
+
+        {/* PWA Home Screen App Banner Shortcut */}
+        {!isPwaInstalled && (
+          <div className="pwa-install-banner" onClick={handleInstallPWA}>
+            <div className="pwa-banner-left">
+              <FaMobileAlt className="pwa-phone-icon" />
+              <div>
+                <strong>Add TaskPulse to Home Screen</strong>
+                <span>Install mobile app for 1-tap access & push alerts</span>
+              </div>
+            </div>
+            <button className="btn-install-pwa">
+              <FaDownload /> Install App
+            </button>
+          </div>
+        )}
 
         {/* Filter Tabs & Batch Actions */}
         <div className="notif-toolbar">
