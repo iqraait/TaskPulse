@@ -1,11 +1,12 @@
 /* ==========================================================================
-   SupportHub Premium Login Page Stylesheet
-   Matching standard enterprise split-card UI with full mobile responsiveness
+   SupportHub Screen-Fitted Login Page Stylesheet
+   Perfectly fits 100vh screen height without vertical scrolling on desktop
    ========================================================================== */
 
-/* Main Wrapper */
+/* Main Wrapper - Strictly 100vh fitted */
 .sh-login-wrapper {
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   width: 100vw;
   background-color: #f1f5f9;
   background-image: 
@@ -14,10 +15,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 16px;
   box-sizing: border-box;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   transition: background-color 0.3s ease;
 }
@@ -32,23 +33,23 @@
 /* Ambient Background Glow Effects */
 .sh-ambient-bg-glow {
   position: absolute;
-  width: 400px;
-  height: 400px;
+  width: 350px;
+  height: 350px;
   border-radius: 50%;
-  filter: blur(100px);
+  filter: blur(90px);
   pointer-events: none;
   z-index: 0;
 }
 
 .glow-1 {
-  top: -100px;
-  left: -100px;
+  top: -80px;
+  left: -80px;
   background: rgba(37, 99, 235, 0.15);
 }
 
 .glow-2 {
-  bottom: -100px;
-  right: -100px;
+  bottom: -80px;
+  right: -80px;
   background: rgba(56, 189, 248, 0.12);
 }
 
@@ -57,15 +58,16 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 1060px;
-  min-height: 620px;
+  max-width: 1040px;
+  max-height: calc(100vh - 32px);
+  height: fit-content;
   background: #ffffff;
-  border-radius: 24px;
+  border-radius: 20px;
   box-shadow: 
-    0 20px 50px -12px rgba(15, 23, 42, 0.15),
+    0 16px 40px -10px rgba(15, 23, 42, 0.14),
     0 0 0 1px rgba(0, 0, 0, 0.04);
   display: grid;
-  grid-template-columns: 1.08fr 1fr;
+  grid-template-columns: 1.05fr 1fr;
   overflow: hidden;
   transition: all 0.3s ease;
 }
@@ -73,7 +75,7 @@
 .sh-login-card.sh-card-dark {
   background: #0f172a;
   box-shadow: 
-    0 24px 60px rgba(0, 0, 0, 0.6),
+    0 20px 50px rgba(0, 0, 0, 0.6),
     0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
@@ -84,7 +86,7 @@
   position: relative;
   background: #091328;
   color: #ffffff;
-  padding: 36px 40px;
+  padding: 28px 32px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -105,17 +107,18 @@
 }
 
 .sh-left-pane:hover .sh-hero-bg-img {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
+/* Small Black Fade Overlay as requested */
 .sh-hero-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.65) 0%,
+    rgba(0, 0, 0, 0.6) 0%,
     rgba(0, 0, 0, 0.35) 45%,
-    rgba(0, 0, 0, 0.75) 100%
+    rgba(0, 0, 0, 0.72) 100%
   );
   z-index: 1;
 }
@@ -123,14 +126,14 @@
 /* Watermarks */
 .sh-watermark-top-right {
   position: absolute;
-  top: 32px;
-  right: 32px;
+  top: 24px;
+  right: 24px;
   text-align: right;
   z-index: 2;
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.35);
-  line-height: 1.25;
+  line-height: 1.2;
   letter-spacing: -0.01em;
   pointer-events: none;
 }
@@ -140,21 +143,21 @@
 }
 
 .sh-watermark-underline {
-  width: 60px;
+  width: 50px;
   height: 3px;
   background: #f59e0b;
-  margin-top: 6px;
+  margin-top: 4px;
   margin-left: auto;
   border-radius: 999px;
 }
 
 .sh-watermark-bottom-script {
   position: absolute;
-  bottom: 50px;
-  right: 32px;
+  bottom: 40px;
+  right: 24px;
   z-index: 2;
   font-family: "Brush Script MT", "Caveat", cursive, Georgia, serif;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   color: rgba(147, 197, 253, 0.45);
   transform: rotate(-4deg);
   pointer-events: none;
@@ -166,22 +169,22 @@
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .sh-brand-icon-box {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 .sh-brand-letter {
-  font-size: 1.45rem;
+  font-size: 1.3rem;
   font-weight: 900;
   color: #ffffff;
 }
@@ -192,7 +195,7 @@
 }
 
 .sh-brand-title {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: #ffffff;
   margin: 0;
@@ -200,10 +203,10 @@
 }
 
 .sh-brand-tagline {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 800;
   color: #94a3b8;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.15em;
   margin-top: 1px;
 }
 
@@ -211,16 +214,16 @@
 .sh-hero-content {
   position: relative;
   z-index: 2;
-  margin: 32px 0;
+  margin: 18px 0;
 }
 
 .sh-hero-headline {
-  font-size: 2.15rem;
+  font-size: 1.75rem;
   font-weight: 800;
   line-height: 1.2;
   color: #ffffff;
   letter-spacing: -0.025em;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .sh-highlight-blue {
@@ -229,38 +232,38 @@
 }
 
 .sh-hero-subtext {
-  font-size: 0.925rem;
+  font-size: 0.85rem;
   color: #94a3b8;
-  line-height: 1.5;
-  margin-bottom: 24px;
-  max-width: 360px;
+  line-height: 1.45;
+  margin-bottom: 16px;
+  max-width: 340px;
 }
 
 /* Features List */
 .sh-features-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .sh-feature-item {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .sh-feature-icon-pill {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: rgba(37, 99, 235, 0.25);
   border: 1px solid rgba(56, 189, 248, 0.3);
   color: #38bdf8;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 0.9rem;
   flex-shrink: 0;
 }
 
@@ -270,42 +273,42 @@
 }
 
 .sh-feature-text strong {
-  font-size: 0.875rem;
+  font-size: 0.825rem;
   font-weight: 700;
   color: #f8fafc;
 }
 
 .sh-feature-text span {
-  font-size: 0.775rem;
+  font-size: 0.725rem;
   color: #94a3b8;
 }
 
 /* Quote Box */
 .sh-quote-box {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-left: 3.5px solid #3b82f6;
-  border-radius: 12px;
-  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-left: 3px solid #3b82f6;
+  border-radius: 10px;
+  padding: 10px 14px;
   position: relative;
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .sh-quote-mark {
   font-family: Georgia, serif;
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   color: #3b82f6;
   line-height: 1;
   display: block;
-  margin-bottom: -10px;
+  margin-bottom: -12px;
 }
 
 .sh-quote-text {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #cbd5e1;
   font-style: italic;
-  line-height: 1.45;
+  line-height: 1.4;
   margin: 0;
 }
 
@@ -321,11 +324,11 @@
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 0.725rem;
+  gap: 10px;
+  font-size: 0.675rem;
   font-weight: 800;
   color: #64748b;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
 }
 
 .sh-dot-sep {
@@ -336,13 +339,14 @@
    RIGHT PANEL (Form Section)
    ========================================================================== */
 .sh-right-pane {
-  padding: 36px 40px;
+  padding: 28px 32px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-sizing: border-box;
   background: #ffffff;
   transition: background 0.3s ease;
+  overflow-y: auto;
 }
 
 .sh-card-dark .sh-right-pane {
@@ -355,19 +359,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .sh-demo-hint-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 5px;
+  padding: 5px 12px;
   background: #eff6ff;
   border: 1px solid #bfdbfe;
   color: #1d4ed8;
   border-radius: 9999px;
-  font-size: 0.775rem;
+  font-size: 0.725rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -386,13 +390,13 @@
 .sh-controls-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-left: auto;
 }
 
 .sh-theme-toggle-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
@@ -401,7 +405,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
   transition: all 0.2s ease;
 }
 
@@ -423,13 +427,13 @@
 .sh-lang-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 5px 10px;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   border-radius: 9999px;
   color: #334155;
-  font-size: 0.775rem;
+  font-size: 0.725rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -441,21 +445,21 @@
 }
 
 .sh-chevron-icon {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
 }
 
 .sh-lang-menu {
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: 6px;
+  margin-top: 4px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
-  min-width: 140px;
+  min-width: 130px;
   overflow: hidden;
   z-index: 20;
 }
@@ -466,11 +470,11 @@
 }
 
 .sh-lang-option {
-  padding: 8px 14px;
+  padding: 7px 12px;
   border: none;
   background: transparent;
   color: #334155;
-  font-size: 0.8rem;
+  font-size: 0.775rem;
   text-align: left;
   cursor: pointer;
 }
@@ -496,13 +500,13 @@
 .sh-demo-credentials-banner {
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 16px;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .sh-card-dark .sh-demo-credentials-banner {
@@ -512,8 +516,8 @@
 
 .sh-demo-banner-content {
   display: flex;
-  gap: 10px;
-  font-size: 0.8rem;
+  gap: 8px;
+  font-size: 0.75rem;
   color: #166534;
 }
 
@@ -522,23 +526,23 @@
 }
 
 .sh-demo-icon {
-  font-size: 1.1rem;
-  margin-top: 2px;
+  font-size: 1rem;
+  margin-top: 1px;
   flex-shrink: 0;
 }
 
 .sh-cred-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 5px;
+  margin-top: 4px;
 }
 
 .sh-chip {
   background: #ffffff;
   border: 1px solid #86efac;
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -556,10 +560,10 @@
   background: #16a34a;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
+  border-radius: 6px;
+  padding: 4px 10px;
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
@@ -567,15 +571,15 @@
 
 /* Form Header */
 .sh-form-header {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .sh-welcome-title {
-  font-size: 2.1rem;
+  font-size: 1.75rem;
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.025em;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
 }
 
 .sh-card-dark .sh-welcome-title {
@@ -583,10 +587,10 @@
 }
 
 .sh-welcome-subtitle {
-  font-size: 0.875rem;
+  font-size: 0.825rem;
   color: #64748b;
   margin: 0;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 .sh-card-dark .sh-welcome-subtitle {
@@ -598,28 +602,28 @@
   background: #fef2f2;
   border-left: 4px solid #ef4444;
   color: #991b1b;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 0.825rem;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
   font-weight: 600;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 /* Main Form Inputs */
 .sh-login-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .sh-input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .sh-input-label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #334155;
   margin-left: 2px;
@@ -637,22 +641,22 @@
 
 .sh-input-icon {
   position: absolute;
-  left: 16px;
+  left: 14px;
   color: #94a3b8;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   pointer-events: none;
   transition: color 0.2s ease;
 }
 
 .sh-input-field {
   width: 100%;
-  padding: 13px 16px 13px 46px;
+  padding: 10px 14px 10px 42px;
   background: #f8fafc;
   border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 10px;
   color: #0f172a;
   font-family: inherit;
-  font-size: 0.925rem;
+  font-size: 0.875rem;
   outline: none;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -667,27 +671,27 @@
 .sh-input-field:focus {
   background: #ffffff;
   border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .sh-card-dark .sh-input-field:focus {
   background: #0f172a;
   border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .sh-password-field {
-  padding-right: 46px;
+  padding-right: 42px;
 }
 
 .sh-toggle-password-btn {
   position: absolute;
-  right: 14px;
+  right: 12px;
   background: transparent;
   border: none;
   color: #94a3b8;
   cursor: pointer;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -713,20 +717,20 @@
 .sh-checkbox-label {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   user-select: none;
 }
 
 .sh-checkbox {
   accent-color: #2563eb;
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   cursor: pointer;
 }
 
 .sh-checkbox-text {
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #475569;
 }
@@ -739,7 +743,7 @@
   background: transparent;
   border: none;
   color: #2563eb;
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   padding: 0;
@@ -758,27 +762,27 @@
 /* Primary Submit Button */
 .sh-submit-btn {
   width: 100%;
-  padding: 13.5px;
+  padding: 11px;
   border-radius: 9999px;
   background: #2563eb;
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.975rem;
+  font-size: 0.925rem;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   transition: all 0.2s ease;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .sh-submit-btn:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
 }
 
 .sh-submit-btn:active {
@@ -786,14 +790,14 @@
 }
 
 .sh-btn-arrow {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 /* Divider */
 .sh-divider {
   position: relative;
   text-align: center;
-  margin: 18px 0 14px;
+  margin: 12px 0 10px;
 }
 
 .sh-divider::before {
@@ -814,8 +818,8 @@
   position: relative;
   z-index: 1;
   background: #ffffff;
-  padding: 0 14px;
-  font-size: 0.775rem;
+  padding: 0 12px;
+  font-size: 0.75rem;
   color: #94a3b8;
   font-weight: 600;
 }
@@ -828,21 +832,21 @@
 .sh-social-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .sh-social-btn {
-  padding: 10px 16px;
-  border-radius: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
   background: #ffffff;
   border: 1.5px solid #e2e8f0;
   color: #334155;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 0.825rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -864,12 +868,12 @@
 
 .sh-google-icon {
   color: #ea4335;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
 }
 
 .sh-apple-icon {
   color: #000000;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .sh-card-dark .sh-apple-icon {
@@ -880,12 +884,12 @@
 .sh-security-badge-box {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 10px 14px;
   background: #f0f7ff;
   border: 1px solid #dbeafe;
-  border-radius: 14px;
-  margin-top: 20px;
+  border-radius: 12px;
+  margin-top: 14px;
 }
 
 .sh-card-dark .sh-security-badge-box {
@@ -894,16 +898,16 @@
 }
 
 .sh-shield-icon-wrap {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   background: #ffffff;
   color: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+  font-size: 0.9rem;
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.15);
   flex-shrink: 0;
 }
 
@@ -914,7 +918,7 @@
 
 .sh-security-text strong {
   display: block;
-  font-size: 0.8rem;
+  font-size: 0.775rem;
   font-weight: 800;
   color: #1e3a8a;
 }
@@ -924,7 +928,7 @@
 }
 
 .sh-security-text p {
-  font-size: 0.725rem;
+  font-size: 0.7rem;
   color: #64748b;
   margin: 1px 0 0 0;
 }
@@ -942,7 +946,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
   animation: fadeInModal 0.2s ease-out forwards;
 }
 
@@ -954,10 +958,10 @@
 .sh-modal-card {
   position: relative;
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   background: #ffffff;
-  border-radius: 20px;
-  padding: 28px 24px;
+  border-radius: 18px;
+  padding: 24px 20px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
 }
@@ -970,12 +974,12 @@
 
 .sh-modal-close-btn {
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: 16px;
+  right: 16px;
   background: #f1f5f9;
   border: none;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   color: #64748b;
   cursor: pointer;
@@ -986,27 +990,27 @@
 
 .sh-modal-header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .sh-modal-icon-badge {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: #eff6ff;
   color: #2563eb;
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 12px;
+  margin: 0 auto 10px;
 }
 
 .sh-modal-header h3 {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #0f172a;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
 }
 
 .sh-card-dark .sh-modal-header h3 {
@@ -1014,106 +1018,106 @@
 }
 
 .sh-modal-header p {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #64748b;
   margin: 0;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 .sh-modal-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .sh-modal-cancel-btn {
   flex: 1;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 10px;
+  border-radius: 8px;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   color: #475569;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 0.825rem;
   cursor: pointer;
 }
 
 .sh-modal-submit-btn {
   flex: 1.5;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 10px;
+  border-radius: 8px;
   background: #2563eb;
   border: none;
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 0.825rem;
   cursor: pointer;
 }
 
 .sh-modal-hint-box {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 10px 12px;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 8px 10px;
   background: #f8fafc;
-  border-radius: 8px;
-  font-size: 0.775rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
   color: #475569;
 }
 
 .sh-modal-success-state {
   text-align: center;
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
 .sh-success-check-icon {
-  font-size: 3.2rem;
+  font-size: 2.8rem;
   color: #10b981;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .sh-modal-success-state h3 {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #0f172a;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
 
 .sh-modal-success-state p {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #64748b;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 .sh-modal-success-credentials {
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
-  border-radius: 10px;
-  padding: 12px;
-  margin: 16px 0;
-  font-size: 0.8rem;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 14px 0;
+  font-size: 0.775rem;
   color: #166534;
 }
 
 .sh-cred-row {
   display: flex;
   justify-content: center;
-  gap: 16px;
-  margin-top: 6px;
+  gap: 12px;
+  margin-top: 4px;
 }
 
 .sh-modal-done-btn {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   border-radius: 9999px;
   background: #10b981;
   border: none;
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 /* ==========================================================================
@@ -1121,23 +1125,28 @@
    ========================================================================== */
 @media (max-width: 960px) {
   .sh-login-wrapper {
-    padding: 16px;
+    height: auto;
+    min-height: 100vh;
+    max-height: none;
+    overflow-y: auto;
+    padding: 16px 12px;
   }
 
   .sh-login-card {
     grid-template-columns: 1fr;
-    max-width: 480px;
-    min-height: auto;
-    border-radius: 20px;
+    max-width: 460px;
+    max-height: none;
+    height: auto;
+    border-radius: 18px;
   }
 
   .sh-left-pane {
-    padding: 28px 24px;
-    min-height: 240px;
+    padding: 24px 20px;
+    min-height: 220px;
   }
 
   .sh-hero-headline {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
   }
 
   .sh-features-list,
@@ -1152,29 +1161,30 @@
   }
 
   .sh-right-pane {
-    padding: 28px 24px;
+    padding: 24px 20px;
+    overflow-y: visible;
   }
 
   .sh-welcome-title {
-    font-size: 1.75rem;
+    font-size: 1.6rem;
   }
 }
 
 @media (max-width: 480px) {
   .sh-login-wrapper {
-    padding: 10px;
+    padding: 8px;
   }
 
   .sh-login-card {
-    border-radius: 16px;
+    border-radius: 14px;
   }
 
   .sh-left-pane {
-    padding: 20px 18px;
+    padding: 18px 16px;
   }
 
   .sh-right-pane {
-    padding: 20px 18px;
+    padding: 18px 16px;
   }
 
   .sh-input-field {
@@ -1186,6 +1196,6 @@
   }
 
   .sh-modal-card {
-    padding: 20px 16px;
+    padding: 18px 14px;
   }
 }
