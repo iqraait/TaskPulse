@@ -85,7 +85,7 @@ function TaskModal({ task, onClose, onRefresh, users = [] }) {
   const getAttachmentUrl = (url) => {
     if (!url) return null;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    return `http://localhost:8000${url.startsWith("/") ? "" : "/"}${url}`;
+    return `${url.startsWith("/") ? "" : "/"}${url}`;
   };
 
   const selectedPrimaryUser = users.find(u => u.id.toString() === newPrimary?.toString());
