@@ -62,6 +62,54 @@ function TodoList() {
 
   const userDept = user?.department || "General";
 
+  // Date-Wise Grouping Helper Functions
+  const groupTodosByDate = (todoList) => {
+    const groups = {};
+    todoList.forEach((item) => {
+      let dateKey = item.due_date;
+      if (!dateKey && item.created_at) {
+        dateKey = item.created_at.split('T')[0];
+      }
+      if (!dateKey) {
+        dateKey = "Unscheduled";
+      }
+
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(item);
+    });
+
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      if (a === "Unscheduled") return 1;
+      if (b === "Unscheduled") return -1;
+      return new Date(b) - new Date(a);
+    });
+
+    return sortedKeys.map(key => ({
+      dateKey: key,
+      items: groups[key]
+    }));
+  };
+
+  const formatGroupDateHeader = (dateStr) => {
+    if (dateStr === "Unscheduled") return "📋 Unscheduled Tasks";
+    const todayStr = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    try {
+      const d = new Date(dateStr + "T00:00:00");
+      const formatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      if (dateStr === todayStr) return `📅 Today (${formatted})`;
+      if (dateStr === tomorrowStr) return `📅 Tomorrow (${formatted})`;
+      return `📅 ${d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}`;
+    } catch {
+      return `📅 ${dateStr}`;
+    }
+  };
+
   const fetchTodos = useCallback(async () => {
     try {
       setLoading(true);
@@ -402,7 +450,7 @@ function TodoList() {
                   )}
                 </div>
 
-                {/* Todos List */}
+                {/* Todos List (Date-Wise Grouped) */}
                 <div className="todo-list-container">
                   {loading ? (
                     <div className="board-loading">Loading your daily tasks...</div>
@@ -413,61 +461,86 @@ function TodoList() {
                       <p>Create a task using the form on the right or receive shared items from department staff.</p>
                     </div>
                   ) : (
-                    todos.map((item) => (
-                      <div 
-                        key={item.id} 
-                        className={`todo-card glass-card ${item.is_completed ? "completed" : ""} ${selectedIds.includes(item.id) ? "selected" : ""}`}
-                      >
-                        <div className="todo-card-left">
-                          <input
-                            type="checkbox"
-                            className="todo-select-checkbox"
-                            checked={selectedIds.includes(item.id)}
-                            onChange={() => toggleSelect(item.id)}
-                          />
-
-                          <button 
-                            type="button" 
-                            className={`todo-check-btn ${item.is_completed ? "checked" : ""}`}
-                            onClick={() => handleOpenCompleteModal(item)}
-                            title={item.is_completed ? "Mark pending" : "Mark completed (+15 Pts)"}
-                          >
-                            {item.is_completed ? <FaCheckSquare /> : <FaSquare />}
-                          </button>
-
-                          <div className="todo-text-block">
-                            <h4 className="todo-title">{item.title}</h4>
-                            {item.description && <p className="todo-desc">{item.description}</p>}
-                            {item.completion_note && (
-                              <div className="todo-completion-note-tag">
-                                💬 <strong>Completion Note:</strong> "{item.completion_note}"
-                              </div>
-                            )}
-                            <div className="todo-meta">
-                              {item.shared_from_username && (
-                                <span className="meta-shared-tag">
-                                  📩 Shared from: <strong>{item.shared_from_username}</strong>
-                                </span>
-                              )}
-                              {item.due_date && (
-                                <span className="meta-date-tag">
-                                  <FaCalendarAlt /> Target: {item.due_date}
-                                </span>
-                              )}
-                              <span className="meta-pts-tag">+15 Reward Points</span>
+                    groupTodosByDate(todos).map((group) => {
+                      const pendingCount = group.items.filter(i => !i.is_completed).length;
+                      return (
+                        <div key={group.dateKey} className="todo-date-group">
+                          <div className="todo-date-group-header">
+                            <div className="date-header-left">
+                              <FaCalendarAlt className="date-icon" />
+                              <h3>{formatGroupDateHeader(group.dateKey)}</h3>
+                              <span className="date-count-badge">{group.items.length} tasks</span>
                             </div>
+                            {pendingCount > 0 && (
+                              <span className="pending-red-badge">
+                                ⚡ {pendingCount} PENDING
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="date-group-items-list">
+                            {group.items.map((item) => (
+                              <div 
+                                key={item.id} 
+                                className={`todo-card glass-card ${item.is_completed ? "completed" : "pending-red-card"} ${selectedIds.includes(item.id) ? "selected" : ""}`}
+                              >
+                                <div className="todo-card-left">
+                                  <input
+                                    type="checkbox"
+                                    className="todo-select-checkbox"
+                                    checked={selectedIds.includes(item.id)}
+                                    onChange={() => toggleSelect(item.id)}
+                                  />
+
+                                  <button 
+                                    type="button" 
+                                    className={`todo-check-btn ${item.is_completed ? "checked" : ""}`}
+                                    onClick={() => handleOpenCompleteModal(item)}
+                                    title={item.is_completed ? "Mark pending" : "Mark completed (+15 Pts)"}
+                                  >
+                                    {item.is_completed ? <FaCheckSquare /> : <FaSquare />}
+                                  </button>
+
+                                  <div className="todo-text-block">
+                                    <h4 className="todo-title">{item.title}</h4>
+                                    {item.description && <p className="todo-desc">{item.description}</p>}
+                                    {item.completion_note && (
+                                      <div className="todo-completion-note-tag">
+                                        💬 <strong>Completion Note:</strong> "{item.completion_note}"
+                                      </div>
+                                    )}
+                                    <div className="todo-meta">
+                                      {!item.is_completed && (
+                                        <span className="meta-pending-red-tag">⚡ PENDING</span>
+                                      )}
+                                      {item.shared_from_username && (
+                                        <span className="meta-shared-tag">
+                                          📩 Shared from: <strong>{item.shared_from_username}</strong>
+                                        </span>
+                                      )}
+                                      {item.due_date && (
+                                        <span className="meta-date-tag">
+                                          <FaCalendarAlt /> Target: {item.due_date}
+                                        </span>
+                                      )}
+                                      <span className="meta-pts-tag">+15 Reward Points</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <button 
+                                  className="btn-delete-todo" 
+                                  onClick={() => handleDeleteTodo(item.id)}
+                                  title="Delete item"
+                                >
+                                  <FaTrash />
+                                </button>
+                              </div>
+                            ))}
                           </div>
                         </div>
-
-                        <button 
-                          className="btn-delete-todo" 
-                          onClick={() => handleDeleteTodo(item.id)}
-                          title="Delete item"
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>

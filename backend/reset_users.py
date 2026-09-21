@@ -7,7 +7,7 @@ django.setup()
 from users.models import User
 
 users_data = [
-    {'username': 'admin', 'password': 'password123', 'role': 'superadmin', 'dept': 'IT Department'},
+    {'username': 'admin', 'password': 'admin123', 'role': 'superadmin', 'dept': 'IT Department'},
     {'username': 'Fareeda', 'password': 'password123', 'role': 'superadmin', 'dept': 'Executive Management'},
     {'username': 'Midhilage', 'password': 'password123', 'role': 'staff', 'dept': 'IT Department'},
 ]

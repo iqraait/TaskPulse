@@ -11,6 +11,15 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['13.233.155.48', 'localhost', '127.0.0.1', '*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://13.233.155.48:800',
+    'http://13.233.155.48',
+    'http://localhost:800',
+    'http://localhost:3000',
+    'http://127.0.0.1:800',
+    'http://127.0.0.1',
+]
+
 
 # APPLICATIONS
 
