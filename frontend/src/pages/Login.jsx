@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -49,9 +49,6 @@ function Login() {
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
 
-  // Demo credentials toast / helper visible
-  const [showDemoInfo, setShowDemoInfo] = useState(false);
-
   const handleLogin = async (e) => {
     if (e) e.preventDefault();
     if (!username || !password) {
@@ -72,12 +69,6 @@ function Login() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemoAdmin = () => {
-    setUsername("admin");
-    setPassword("adminpassword");
-    setErrorMsg("");
   };
 
   const handleForgotSubmit = (e) => {
@@ -101,24 +92,18 @@ function Login() {
       {/* Background ambient lighting accents */}
       <div className="sh-ambient-bg-glow glow-1"></div>
       <div className="sh-ambient-bg-glow glow-2"></div>
+      <div className="sh-ambient-bg-glow glow-3"></div>
 
       {/* Main Screen-Fitted Card Container */}
       <div className={`sh-login-card ${isDarkMode ? "sh-card-dark" : ""}`}>
         
-        {/* ================= LEFT VISUAL PANEL (SupportHub Hero) ================= */}
+        {/* ================= LEFT VISUAL PANEL (TaskPulse Hero) ================= */}
         <div className="sh-left-pane">
           {/* Background image & overlay gradient */}
-          <img src={heroImg} alt="SupportHub Team" className="sh-hero-bg-img" />
+          <img src={heroImg} alt="TaskPulse Team" className="sh-hero-bg-img" />
           <div className="sh-hero-overlay"></div>
 
-          {/* Background Typography Watermarks */}
-          <div className="sh-watermark-top-right">
-            <span>Ideas</span>
-            <span>Tickets</span>
-            <span>Solutions</span>
-            <div className="sh-watermark-underline"></div>
-          </div>
-
+          {/* Bottom Watermark Script */}
           <div className="sh-watermark-bottom-script">
             Support Never Stops
           </div>
@@ -126,11 +111,11 @@ function Login() {
           {/* Top Brand Header */}
           <div className="sh-brand-header">
             <div className="sh-brand-icon-box">
-              <span className="sh-brand-letter">S</span>
+              <span className="sh-brand-letter">T</span>
             </div>
             <div className="sh-brand-text">
-              <h1 className="sh-brand-title">SupportHub</h1>
-              <span className="sh-brand-tagline">SUPPORT • TRACK • RESOLVE</span>
+              <h1 className="sh-brand-title">TaskPulse Pro</h1>
+              <span className="sh-brand-tagline">TASK • TRACK • RESOLVE</span>
             </div>
           </div>
 
@@ -200,16 +185,6 @@ function Login() {
           
           {/* Top Controls: Dark Mode & Language Selector */}
           <div className="sh-top-controls">
-            {/* Quick Demo Credentials Info Toggle */}
-            <button
-              type="button"
-              className="sh-demo-hint-btn"
-              onClick={() => setShowDemoInfo(!showDemoInfo)}
-              title="Click to view login details"
-            >
-              <FaKey /> Credentials Info
-            </button>
-
             <div className="sh-controls-right">
               {/* Dark mode toggle */}
               <button
@@ -252,36 +227,6 @@ function Login() {
               </div>
             </div>
           </div>
-
-          {/* Demo Info Banner (Collapsible) */}
-          {showDemoInfo && (
-            <div className="sh-demo-credentials-banner">
-              <div className="sh-demo-banner-content">
-                <FaInfoCircle className="sh-demo-icon" />
-                <div>
-                  <strong>Login Credentials:</strong>
-                  <div className="sh-cred-chips">
-                    <span className="sh-chip" onClick={fillDemoAdmin}>
-                      Admin: <code>admin</code> / <code>adminpassword</code>
-                    </span>
-                    <span className="sh-chip" onClick={() => { setUsername("superadmin"); setPassword("superadmin123"); }}>
-                      SuperAdmin: <code>superadmin</code> / <code>superadmin123</code>
-                    </span>
-                    <span className="sh-chip" onClick={() => { setUsername("staff1"); setPassword("staffpassword"); }}>
-                      Staff: <code>staff1</code> / <code>staffpassword</code>
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="sh-fill-quick-btn"
-                onClick={fillDemoAdmin}
-              >
-                Auto-fill Admin
-              </button>
-            </div>
-          )}
 
           {/* Form Header */}
           <div className="sh-form-header">
@@ -379,12 +324,12 @@ function Login() {
 
           {/* Social Sign In Buttons */}
           <div className="sh-social-grid">
-            <button type="button" className="sh-social-btn" onClick={fillDemoAdmin}>
+            <button type="button" className="sh-social-btn">
               <FaGoogle className="sh-google-icon" />
               <span>Google</span>
             </button>
 
-            <button type="button" className="sh-social-btn" onClick={fillDemoAdmin}>
+            <button type="button" className="sh-social-btn">
               <FaApple className="sh-apple-icon" />
               <span>Apple</span>
             </button>
@@ -433,7 +378,7 @@ function Login() {
                       <input
                         type="text"
                         className="sh-input-field"
-                        placeholder="e.g. admin or admin@todoteam.com"
+                        placeholder="Enter your username or email"
                         value={forgotInput}
                         onChange={(e) => setForgotInput(e.target.value)}
                         required
@@ -463,7 +408,7 @@ function Login() {
                 <div className="sh-modal-hint-box">
                   <FaInfoCircle />
                   <span>
-                    Default admin credentials: Username <strong>admin</strong> | Password <strong>adminpassword</strong>
+                    Your reset request will be processed securely. Contact your workspace admin if you need immediate assistance.
                   </span>
                 </div>
               </>
@@ -472,24 +417,14 @@ function Login() {
                 <FaCheckCircle className="sh-success-check-icon" />
                 <h3>Reset Link Sent!</h3>
                 <p>
-                  We have sent password reset instructions to <strong>{forgotInput || "your email/account"}</strong>. Please check your inbox or contact your workspace admin.
+                  We have sent password reset instructions to <strong>{forgotInput || "your email/account"}</strong>. Please check your inbox or contact your workspace administrator.
                 </p>
-                <div className="sh-modal-success-credentials">
-                  <p>You can also log in directly using the default credentials:</p>
-                  <div className="sh-cred-row">
-                    <span>Username: <strong>admin</strong></span>
-                    <span>Password: <strong>adminpassword</strong></span>
-                  </div>
-                </div>
                 <button
                   type="button"
                   className="sh-modal-done-btn"
-                  onClick={() => {
-                    fillDemoAdmin();
-                    closeForgotModal();
-                  }}
+                  onClick={closeForgotModal}
                 >
-                  Fill & Return to Sign In
+                  Return to Sign In
                 </button>
               </div>
             )}
