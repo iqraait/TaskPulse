@@ -1,0 +1,47 @@
+name: Auto Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Execute Deployment on AWS EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 13.233.155.48
+          username: ubuntu
+          key: ${{ secrets.AWS_EC2_PEM_KEY }}
+          port: 22
+          script: |
+            cd /var/www/TaskPulse || cd ~/TaskPulse || cd ~/todo-team-app
+            git pull origin main
+            
+            # Backend Setup & Migrations
+            if [ -d "backend" ]; then
+              cd backend
+              source venv/bin/activate || source ../venv/bin/activate || true
+              pip install -r requirements.txt || true
+              python manage.py makemigrations
+              python manage.py migrate
+              cd ..
+            fi
+
+            # Frontend Setup & Build
+            if [ -d "frontend" ]; then
+              cd frontend
+              npm install
+              npm run build
+              cd ..
+            fi
+
+            # Restart Services (Gunicorn / Nginx / PM2 / Systemd)
+            sudo systemctl restart gunicorn || sudo systemctl restart taskpulse || pm2 restart all || true
+            sudo systemctl restart nginx || true
