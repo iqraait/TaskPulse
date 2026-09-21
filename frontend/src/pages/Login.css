@@ -1,117 +1,131 @@
 /* ==========================================================================
-   Login Page — Attachment 3 Big Design & Interactive Calendar
+   Login Page — Screen-Fitted Premium Glassmorphism Design & Custom Logo
    ========================================================================== */
 
 .login-attachment3-wrapper {
   min-height: 100vh;
   width: 100vw;
-  background-color: #201311; /* Warm Espresso Background from Attachment 2 */
+  background-color: #0b0f19; /* Deep Obsidian Slate */
   background-image: 
-    radial-gradient(circle at 15% 20%, rgba(245, 158, 11, 0.18) 0%, transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(217, 119, 6, 0.15) 0%, transparent 45%);
+    radial-gradient(circle at 10% 15%, rgba(59, 130, 246, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 90% 85%, rgba(124, 58, 237, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.08) 0%, transparent 55%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
+  padding: 24px 20px;
+  box-sizing: border-box;
 }
 
-/* BIG Split Card Container */
+/* SCREEN-FITTED Split Card Container */
 .login-attachment3-card-big {
   width: 100%;
-  max-width: 1240px; /* BIGGER CONTAINER */
-  min-height: 640px;
-  background: #fcf9f2; /* Soft Cream Warm Container from Attachment 3 */
-  border-radius: 40px;
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.4);
+  max-width: 1080px;
+  max-height: calc(100vh - 48px);
+  min-height: 540px;
+  height: fit-content;
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 
+    0 24px 60px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
   display: grid;
-  grid-template-columns: 1.15fr 1.35fr;
+  grid-template-columns: 1.05fr 1.15fr;
   overflow: hidden;
-  padding: 20px;
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  padding: 12px;
+  box-sizing: border-box;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
   .login-attachment3-card-big {
     grid-template-columns: 1fr;
-    max-width: 580px;
+    max-width: 480px;
+    max-height: none;
   }
 }
 
-/* Left Form Pane - Spacious */
+/* Left Form Pane - Perfectly Proportioned */
 .login-left-pane-big {
-  padding: 44px 48px;
+  padding: 32px 36px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
-/* Top Brand Badge */
+/* Top Brand Logo Pill */
 .brand-pill-badge-big {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 22px 8px 10px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  padding: 6px 18px 6px 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 9999px;
   width: fit-content;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.brand-pill-icon-big {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: #ffffff;
-  font-weight: 800;
-  font-size: 1.05rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.3);
+.brand-logo-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  object-fit: contain;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .brand-pill-name-big {
   font-weight: 800;
-  font-size: 1.05rem;
-  color: #1c100e;
+  font-size: 0.975rem;
+  color: #0f172a;
+  letter-spacing: -0.01em;
 }
 
 .login-heading-group-big {
-  margin: 32px 0 24px;
+  margin: 20px 0 16px;
 }
 
 .login-heading-group-big h2 {
-  font-size: 2.2rem; /* BIGGER HEADING */
+  font-size: 1.85rem;
   font-weight: 800;
-  color: #1c100e;
+  color: #0f172a;
   letter-spacing: -0.02em;
 }
 
 .login-heading-group-big p {
-  font-size: 0.975rem;
-  color: #6b7280;
-  margin-top: 6px;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.login-error-alert {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  margin-bottom: 14px;
 }
 
 .login-form-attachment3-big {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
 .form-group-pill {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .form-label-pill {
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: #4b5563;
-  margin-left: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #334155;
+  margin-left: 4px;
 }
 
 .input-pill-wrap {
@@ -120,127 +134,127 @@
 
 .pill-input-icon-big {
   position: absolute;
-  left: 20px;
+  left: 18px;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
-  font-size: 1.1rem;
+  color: #94a3b8;
+  font-size: 1.05rem;
 }
 
 .input-pill-big {
   width: 100%;
-  padding: 15px 24px 15px 54px; /* BIGGER INPUT PADDING */
-  background: #f3f4f6;
-  border: 1px solid transparent;
+  padding: 12px 20px 12px 48px;
+  background: #f1f5f9;
+  border: 1.5px solid transparent;
   border-radius: 9999px;
-  color: #111827;
+  color: #0f172a;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   outline: none;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .input-pill-big:focus {
   background: #ffffff;
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
 }
 
 .toggle-pw-pill-big {
   position: absolute;
-  right: 20px;
+  right: 18px;
   top: 50%;
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: #9ca3af;
+  color: #94a3b8;
   cursor: pointer;
-  font-size: 1.05rem;
+  font-size: 1rem;
 }
 
 .btn-submit-gold-pill-big {
   width: 100%;
-  padding: 16px;
+  padding: 13px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
-  color: #1c100e;
-  font-weight: 800;
-  font-size: 1.05rem;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
   border: none;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   transition: all 0.2s ease;
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .btn-submit-gold-pill-big:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.5);
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
 }
 
 /* Social Buttons Row */
 .social-pill-row-big {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 14px;
 }
 
 .social-pill-btn-big {
-  padding: 12px;
+  padding: 10px;
   border-radius: 9999px;
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  color: #374151;
-  font-weight: 700;
-  font-size: 0.9rem;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.825rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .social-pill-btn-big:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 
 .login-footer-pill-big {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.825rem;
-  color: #6b7280;
-  margin-top: 28px;
-  padding-top: 18px;
-}
-
-.login-footer-pill-big a {
-  color: #1c100e;
-  font-weight: 800;
-  text-decoration: underline;
+  font-size: 0.775rem;
+  color: #94a3b8;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px stroke #f1f5f9;
 }
 
 .terms-link {
-  text-decoration: underline;
-  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+  font-weight: 600;
 }
 
-/* Right Hero Pane - Bigger */
+/* Right Hero Pane - Fits Screen Height */
 .login-right-pane-big {
   position: relative;
-  border-radius: 32px;
+  border-radius: 20px;
   overflow: hidden;
-  min-height: 580px;
+  height: 100%;
+  min-height: 480px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
   .login-right-pane-big {
     display: none;
   }
@@ -261,82 +275,84 @@
 .hero-overlay-gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(28, 16, 14, 0.25) 0%, rgba(28, 16, 14, 0.65) 100%);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.75) 100%);
 }
 
-/* Floating Widgets matching Attachment 3 */
+/* Floating Glass Widgets */
 .floating-widget {
   position: absolute;
   background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 20px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   z-index: 10;
 }
 
 .widget-top-big {
-  top: 28px;
-  left: 28px;
-  padding: 16px 24px;
-  background: #fef08a;
-  border-color: #fde047;
-  color: #854d0e;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #0f172a;
 }
 
 .widget-title {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 800;
   display: block;
+  color: #0f172a;
 }
 
 .widget-time {
-  font-size: 0.8rem;
-  opacity: 0.9;
+  font-size: 0.775rem;
+  color: #475569;
   margin-top: 4px;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* WORKING INTERACTIVE CALENDAR WIDGET */
+/* INTERACTIVE CALENDAR WIDGET */
 .widget-mid-calendar-big {
-  top: 40%;
+  top: 42%;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 14px 18px;
-  background: rgba(28, 16, 14, 0.65);
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.82);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  width: calc(100% - 48px);
-  max-width: 440px;
+  width: calc(100% - 40px);
+  box-sizing: border-box;
 }
 
 .cal-header-bar {
-  font-size: 0.775rem;
-  font-weight: 800;
-  color: #fef3c7;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #93c5fd;
   display: flex;
   align-items: center;
   gap: 6px;
-  letter-spacing: 0.03em;
 }
 
 .cal-days-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 5px;
 }
 
 .cal-day-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 4px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.12);
+  padding: 6px 2px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid transparent;
   color: #ffffff;
   cursor: pointer;
@@ -344,69 +360,78 @@
 }
 
 .cal-day-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .cal-day-btn.active {
-  background: #ffffff;
-  color: #1c100e;
+  background: #3b82f6;
+  color: #ffffff;
   font-weight: 800;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  border-color: #60a5fa;
 }
 
 .day-label {
-  font-size: 0.675rem;
-  opacity: 0.8;
+  font-size: 0.65rem;
+  opacity: 0.85;
 }
 
 .date-label {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 800;
+  margin-top: 1px;
+}
+
+.pending-dot-badge {
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 9999px;
   margin-top: 2px;
 }
 
 .widget-bottom-meeting-big {
-  bottom: 28px;
-  left: 28px;
-  padding: 18px 24px;
-  background: #ffffff;
-  color: #111827;
-  min-width: 260px;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
 }
 
 .meeting-title {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 800;
   display: block;
 }
 
 .meeting-time {
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin-top: 4px;
+  font-size: 0.775rem;
+  color: #64748b;
+  margin-top: 3px;
   display: block;
 }
 
 .avatar-stack {
   display: flex;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .av-circle {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 2px solid #ffffff;
-  font-size: 0.725rem;
+  font-size: 0.675rem;
   font-weight: 800;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: -8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  margin-left: -6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .av-circle:first-child { margin-left: 0; }

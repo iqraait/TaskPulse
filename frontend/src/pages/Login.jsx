@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import { FaLock, FaUserCircle, FaEye, FaEyeSlash, FaArrowRight, FaApple, FaGoogle, FaCalendarAlt, FaTasks, FaClock, FaCheckCircle, FaExclamationCircle, FaUser } from "react-icons/fa";
+import { FaLock, FaUserCircle, FaEye, FaEyeSlash, FaArrowRight, FaApple, FaGoogle, FaCalendarAlt, FaShieldAlt } from "react-icons/fa";
 import heroImg from "../assets/login_team_hero.png";
 import "./Login.css";
 
@@ -79,13 +79,15 @@ function Login() {
 
   return (
     <div className="login-attachment3-wrapper">
-      {/* Big Split Glass Card */}
+      {/* Sleek Screen-Fitted Card */}
       <div className="login-attachment3-card-big">
+        
         {/* Left Form Section */}
         <div className="login-left-pane-big">
-          {/* Top Pill Logo Badge */}
+          
+          {/* Top Brand Logo */}
           <div className="brand-pill-badge-big">
-            <span className="brand-pill-icon-big">T</span>
+            <img src="/taskpulse-logo.svg" alt="TaskPulse Logo" className="brand-logo-img" />
             <span className="brand-pill-name-big">TaskPulse Pro</span>
           </div>
 
@@ -104,7 +106,7 @@ function Login() {
                 <input
                   type="text"
                   className="input-pill-big"
-                  placeholder="Enter your username (e.g. admin)"
+                  placeholder="Enter username (e.g. admin)"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -135,33 +137,33 @@ function Login() {
             </div>
 
             <button type="submit" className="btn-submit-gold-pill-big" disabled={loading}>
-              {loading ? "Signing in..." : "Submit"} <FaArrowRight />
+              {loading ? "Signing in..." : "Sign In to Command Center"} <FaArrowRight />
             </button>
           </form>
 
-          {/* Social / Alternate Login Options */}
+          {/* Social / SSO Quick Actions */}
           <div className="social-pill-row-big">
             <button type="button" className="social-pill-btn-big">
-              <FaApple /> Apple
+              <FaApple /> Apple ID
             </button>
             <button type="button" className="social-pill-btn-big">
-              <FaGoogle /> Google
+              <FaGoogle /> Google Workspace
             </button>
           </div>
 
           <div className="login-footer-pill-big">
-            <span>Have an account? <a href="#login">Sign In</a></span>
-            <span className="terms-link">Terms & Conditions</span>
+            <span>Secured Enterprise Portal</span>
+            <span className="terms-link"><FaShieldAlt /> TLS 256-bit Encrypted</span>
           </div>
         </div>
 
-        {/* Right Hero Image Panel with LIVE Ticket Created Dates Calendar */}
+        {/* Right Hero Visual Panel with Ticket Creation Dates Calendar */}
         <div className="login-right-pane-big">
           <div className="hero-image-wrapper">
-            <img src={heroImg} alt="Team Collaboration" className="hero-bg-img" />
+            <img src={heroImg} alt="Team Command Center" className="hero-bg-img" />
             <div className="hero-overlay-gradient"></div>
 
-            {/* Floating Widget 1: Top Task Review (Dynamic based on selected creation date) */}
+            {/* Top Activity Banner */}
             <div className="floating-widget widget-top-big">
               <div className="widget-header-yellow">
                 <span className="widget-title">
@@ -174,7 +176,7 @@ function Login() {
               </div>
             </div>
 
-            {/* Floating Widget 2: WORKING Interactive Ticket Creation Dates Calendar Bar */}
+            {/* Working Calendar Date Picker Bar */}
             <div className="floating-widget widget-mid-calendar-big">
               <div className="cal-header-bar">
                 <FaCalendarAlt className="cal-icon" /> Ticket Creation Dates Preview:
@@ -207,7 +209,7 @@ function Login() {
               </div>
             </div>
 
-            {/* Floating Widget 3: Bottom Secondary Ticket Card */}
+            {/* Bottom Department Summary */}
             <div className="floating-widget widget-bottom-meeting-big">
               <span className="meeting-title">
                 {secondaryTicket ? `${secondaryTicket.ticket_code}: ${secondaryTicket.title}` : (primaryTicket ? `Department: ${primaryTicket.department}` : "Select a date above to preview pending tickets")}
@@ -224,6 +226,7 @@ function Login() {
 
           </div>
         </div>
+
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 # Target AWS IP: 13.233.155.48
 
 $AWS_IP = "13.233.155.48"
-$PEM_PATH = "C:\Users\IT\Downloads\jdt-key.pem" # Update if using a different .pem file name in C:\Users\IT\Desktop\My Projects
+$PEM_PATH = "C:\Users\IT\Desktop\My Projects\Taskpulse\taskPulse-django-server-key.pem"
 
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host "🚀 TaskPulse Pro Auto-Deploying to AWS ($AWS_IP)..." -ForegroundColor Yellow
@@ -15,9 +15,9 @@ git commit -m "Auto-deploy update to AWS"
 git push origin main
 
 # Step 2: SSH into AWS EC2 server and pull/restart
-Write-Host "`n2. SSH connecting to AWS Server ($AWS_IP) to pull & deploy..." -ForegroundColor Green
+Write-Host "`n2. SSH connecting to AWS Server ($AWS_IP) using key..." -ForegroundColor Green
 
-ssh -i "$PEM_PATH" -o StrictHostKeyChecking=no "ubuntu@$AWS_IP" @"
+ssh -i "$PEM_PATH" -o ConnectTimeout=10 -o StrictHostKeyChecking=no "ubuntu@$AWS_IP" @"
   echo 'Connected to AWS Server...'
   cd /var/www/TaskPulse || cd ~/TaskPulse || cd ~/todo-team-app || exit
   

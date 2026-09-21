@@ -43,7 +43,7 @@ function Sidebar() {
       {/* Brand Header */}
       <div className="sidebar-header">
         <div className="brand-logo">
-          <div className="logo-icon">T</div>
+          <img src="/taskpulse-logo.svg" alt="TaskPulse Logo" className="sidebar-brand-logo-img" style={{ width: '34px', height: '34px', borderRadius: '10px' }} />
           {!collapsed && (
             <div className="brand-text">
               <span className="brand-name">TaskPulse</span>
