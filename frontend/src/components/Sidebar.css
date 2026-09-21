@@ -170,15 +170,9 @@
   color: #ef4444;
 }
 
-/* Mobile Sidebar Rules */
+/* Mobile Sidebar Rules: Hide sidebar completely on mobile screens (<= 768px) */
 @media (max-width: 768px) {
   .sidebar {
-    width: 72px;
-  }
-  .sidebar .brand-text,
-  .sidebar .nav-label,
-  .sidebar .nav-group-title,
-  .sidebar .sidebar-footer span {
-    display: none;
+    display: none !important;
   }
 }

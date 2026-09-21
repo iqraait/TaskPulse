@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { showToastNotification } from "./NotificationToast";
 import { 
   FaBell, 
   FaTimes, 
@@ -14,7 +15,9 @@ import {
   FaChevronRight,
   FaShareAlt,
   FaCheckCircle,
-  FaTimesCircle
+  FaTimesCircle,
+  FaVolumeMute,
+  FaVolumeUp
 } from "react-icons/fa";
 import "./NotificationDrawer.css";
 
@@ -23,14 +26,21 @@ function NotificationDrawer({ isOpen, onClose, onNotificationRead }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
-  const [pushStatus, setPushStatus] = useState("default"); // default, granted, denied
+  
+  // Toggle switch state stored in localStorage (default: true)
+  const [isNotifEnabled, setIsNotifEnabled] = useState(() => {
+    const saved = localStorage.getItem("taskpulse_notif_enabled");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  const [browserPermission, setBrowserPermission] = useState("default");
 
   useEffect(() => {
     if (isOpen) {
       fetchNotifications();
     }
     if ("Notification" in window) {
-      setPushStatus(Notification.permission);
+      setBrowserPermission(Notification.permission);
     }
   }, [isOpen]);
 
@@ -46,11 +56,41 @@ function NotificationDrawer({ isOpen, onClose, onNotificationRead }) {
     }
   };
 
+  const handleToggleChange = async (e) => {
+    const enabled = e.target.checked;
+    setIsNotifEnabled(enabled);
+    localStorage.setItem("taskpulse_notif_enabled", JSON.stringify(enabled));
+
+    if (enabled) {
+      showToastNotification("Notifications Enabled 🔔", "Real-time alerts active for tickets, todos & chat messages.", "success");
+      
+      // Attempt browser notification permission if supported
+      if ("Notification" in window && Notification.permission === "default") {
+        try {
+          const perm = await Notification.requestPermission();
+          setBrowserPermission(perm);
+          if (perm === "granted" && 'serviceWorker' in navigator) {
+            const reg = await navigator.serviceWorker.ready;
+            const sub = await reg.pushManager.getSubscription();
+            if (sub) {
+              await api.post("push-subscribe/", sub.toJSON()).catch(() => {});
+            }
+          }
+        } catch (err) {
+          console.log("Permission request handled silently:", err);
+        }
+      }
+    } else {
+      showToastNotification("Notifications Muted 🔕", "You can re-enable alerts anytime from this toggle.", "info");
+    }
+  };
+
   const handleMarkAllRead = async () => {
     try {
       await api.post("notifications/mark_all_read/");
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       if (onNotificationRead) onNotificationRead();
+      showToastNotification("Notifications Read ✅", "All notifications marked as read.", "success");
     } catch (err) {
       console.error("Error marking all read:", err);
     }
@@ -62,6 +102,7 @@ function NotificationDrawer({ isOpen, onClose, onNotificationRead }) {
       await api.delete("notifications/clear_all/");
       setNotifications([]);
       if (onNotificationRead) onNotificationRead();
+      showToastNotification("Cleared 🗑️", "Notification history cleared.", "info");
     } catch (err) {
       console.error("Error clearing notifications:", err);
     }
@@ -80,39 +121,6 @@ function NotificationDrawer({ isOpen, onClose, onNotificationRead }) {
     onClose();
     if (item.link) {
       navigate(item.link);
-    }
-  };
-
-  const requestMobilePush = async () => {
-    if (!("Notification" in window)) {
-      alert("Browser Push Notifications are not supported on this device/browser.");
-      return;
-    }
-    try {
-      const permission = await Notification.requestPermission();
-      setPushStatus(permission);
-      if (permission === "granted") {
-        new Notification("TaskPulse Alert 🚀", {
-          body: "Mobile Push Notifications successfully activated! You will receive real-time ticket alerts.",
-          icon: "/favicon.ico"
-        });
-        alert("🔔 Mobile Push Notifications Enabled!");
-      } else {
-        alert("Notification permission denied. Please enable notifications in your browser settings.");
-      }
-    } catch (err) {
-      console.error("Push setup error:", err);
-    }
-  };
-
-  const testMobilePush = () => {
-    if ("Notification" in window && Notification.permission === "granted") {
-      new Notification("TaskPulse Test Alert 🔔", {
-        body: "Test notification is working smoothly on your device!",
-        icon: "/favicon.ico"
-      });
-    } else {
-      alert("🔔 TaskPulse Test Notification: Creating a Todo or Task now triggers real-time alerts!");
     }
   };
 
@@ -177,27 +185,30 @@ function NotificationDrawer({ isOpen, onClose, onNotificationRead }) {
           </button>
         </div>
 
-        {/* Mobile Push Quick Shortcut Banner */}
-        <div className="notif-push-shortcut-card">
-          <div className="push-shortcut-left">
-            <FaMobileAlt className="push-mobile-icon" />
+        {/* Global Notifications Toggle Switch Banner */}
+        <div className="notif-toggle-shortcut-card">
+          <div className="toggle-shortcut-left">
+            {isNotifEnabled ? (
+              <FaVolumeUp className="toggle-bell-icon active" />
+            ) : (
+              <FaVolumeMute className="toggle-bell-icon inactive" />
+            )}
             <div>
-              <strong>Mobile Push Alerts</strong>
-              <span className="push-status-text">
-                {pushStatus === "granted" ? "Active ✓" : "Inactive 🔔"}
+              <strong>Alert Notifications</strong>
+              <span className="toggle-status-text">
+                {isNotifEnabled ? "Active & Real-Time ✓" : "Notifications Paused 🔕"}
               </span>
             </div>
           </div>
-          <div className="push-shortcut-actions">
-            {pushStatus !== "granted" ? (
-              <button className="btn-enable-push" onClick={requestMobilePush}>
-                Enable
-              </button>
-            ) : (
-              <button className="btn-test-push" onClick={testMobilePush}>
-                Test Alert
-              </button>
-            )}
+          <div className="toggle-switch-wrap">
+            <label className="switch-toggle" title="Toggle Real-Time Notifications ON/OFF">
+              <input 
+                type="checkbox" 
+                checked={isNotifEnabled} 
+                onChange={handleToggleChange} 
+              />
+              <span className="slider round"></span>
+            </label>
           </div>
         </div>
 
@@ -241,12 +252,12 @@ function NotificationDrawer({ isOpen, onClose, onNotificationRead }) {
         {/* Notification Items List */}
         <div className="notif-list-container">
           {loading ? (
-            <div className="notif-loading">Loading notifications...</div>
+            <div className="notif-loading">Loading notification history...</div>
           ) : filteredNotifs.length === 0 ? (
             <div className="notif-empty-state">
               <FaBell className="empty-bell-icon" />
-              <p>No notifications found</p>
-              <span>Activity updates on Todos, Tickets & Chat will appear here</span>
+              <p>No notifications yet</p>
+              <span>Updates on Todos, Tickets & Chat will appear here</span>
             </div>
           ) : (
             filteredNotifs.map((item) => (
