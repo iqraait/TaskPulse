@@ -207,3 +207,21 @@
   color: #6b21a8;
   font-weight: 700;
 }
+
+@media (max-width: 768px) {
+  .list-filters-wrapper {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-box {
+    width: 100%;
+  }
+  .filter-select {
+    width: 100% !important;
+  }
+  .task-table th, .task-table td {
+    padding: 12px 10px;
+    font-size: 0.8rem;
+  }
+}

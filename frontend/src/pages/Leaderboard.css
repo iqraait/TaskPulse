@@ -227,9 +227,38 @@
 
 @media (max-width: 800px) {
   .leaderboard-table-header, .leaderboard-row {
-    grid-template-columns: 80px 1.5fr 1fr 1fr;
+    grid-template-columns: 70px 1.5fr 1fr 1fr;
   }
   .col-tickets, .col-todos {
     display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .leaderboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+  }
+  .my-rank-badge {
+    width: 100%;
+  }
+  .leaderboard-table-header {
+    display: none;
+  }
+  .leaderboard-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+    position: relative;
+  }
+  .col-staff {
+    width: 100%;
+  }
+  .total-pts-badge {
+    align-self: flex-start;
   }
 }
