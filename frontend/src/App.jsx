@@ -9,12 +9,18 @@ import StaffManagement from "./pages/StaffManagement";
 import Reports from "./pages/Reports";
 import TodoList from "./pages/TodoList";
 import Leaderboard from "./pages/Leaderboard";
+import MobileBottomNav from "./components/MobileBottomNav";
 
 const ProtectedRoute = ({ children }) => {
   const { token, loading } = useAuth();
   if (loading) return <div style={{ color: "white", padding: 20 }}>Loading TaskPulse...</div>;
   if (!token) return <Navigate to="/" replace />;
-  return children;
+  return (
+    <>
+      {children}
+      <MobileBottomNav />
+    </>
+  );
 };
 
 function App() {

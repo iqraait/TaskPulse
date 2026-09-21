@@ -10,15 +10,18 @@ import {
   FaUser, 
   FaSignOutAlt,
   FaComments,
-  FaCheckCircle
+  FaCheckCircle,
+  FaPlus
 } from "react-icons/fa";
 import DepartmentChatModal from "./DepartmentChatModal";
+import QuickCreateTodoModal from "./QuickCreateTodoModal";
 import "./Navbar.css";
 
 function Navbar({ searchVal = "", setSearchVal = () => {} }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showChatModal, setShowChatModal] = useState(false);
+  const [showQuickTodo, setShowQuickTodo] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(false);
 
   const role = user?.role || (user?.is_superuser ? 'superadmin' : 'staff');
@@ -99,6 +102,16 @@ function Navbar({ searchVal = "", setSearchVal = () => {} }) {
 
       {/* Header Actions */}
       <div className="navbar-actions">
+        {/* Quick Create Daily To-Do Action Button */}
+        <button 
+          className="btn btn-primary btn-sm quick-todo-nav-btn"
+          onClick={() => setShowQuickTodo(true)}
+          title="Quick Add Daily To-Do"
+        >
+          <FaPlus style={{ fontSize: '11px' }} />
+          <span>+ Quick To-Do</span>
+        </button>
+
         {/* Live Department Staff Chat Trigger */}
         <button 
           className="btn btn-secondary btn-sm dept-chat-btn" 
@@ -141,6 +154,12 @@ function Navbar({ searchVal = "", setSearchVal = () => {} }) {
       {showChatModal && (
         <DepartmentChatModal onClose={() => setShowChatModal(false)} />
       )}
+
+      {/* Quick Create Daily To-Do Modal */}
+      <QuickCreateTodoModal
+        isOpen={showQuickTodo}
+        onClose={() => setShowQuickTodo(false)}
+      />
     </header>
   );
 }

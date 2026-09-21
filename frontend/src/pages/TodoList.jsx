@@ -83,6 +83,9 @@ function TodoList() {
 
   useEffect(() => {
     fetchTodos();
+    const handleGlobalCreated = () => fetchTodos();
+    window.addEventListener("todo-created", handleGlobalCreated);
+    return () => window.removeEventListener("todo-created", handleGlobalCreated);
   }, [fetchTodos]);
 
   const handleCreateTodo = async (e) => {

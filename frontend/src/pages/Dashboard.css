@@ -520,3 +520,31 @@
   font-size: 0.725rem;
   color: #94a3b8;
 }
+
+@media (max-width: 640px) {
+  .dashboard-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .gamification-dashboard-widget {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .ticketpro-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .metric-card {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  .metric-icon-box {
+    width: 36px;
+    height: 36px;
+    font-size: 0.95rem;
+  }
+  .metric-value {
+    font-size: 1.2rem;
+  }
+}
