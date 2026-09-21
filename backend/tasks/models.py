@@ -179,7 +179,9 @@ class TodoShareRequest(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, default="")
     points_value = models.IntegerField(default=15)
-    status = models.CharField(max_length=20, default="pending")  # pending, accepted, declined
+    status = models.CharField(max_length=20, default="pending")  # pending, accepted, rejected
+    rejection_reason = models.TextField(blank=True, default="")
+    target_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

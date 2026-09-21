@@ -173,11 +173,6 @@ class TodoItemViewSet(ModelViewSet):
             todo.completed_at = None
         todo.save()
 
-        # If shared, we can log or notify sender
-        if todo.is_completed and todo.shared_from:
-            # Shared todo completed notification logic placeholder
-            pass
-
         return Response({
             'status': 'success',
             'is_completed': todo.is_completed,
@@ -189,35 +184,41 @@ class TodoItemViewSet(ModelViewSet):
     def share_items(self, request):
         user = request.user
         item_ids = request.data.get('item_ids', [])
-        recipient_id = request.data.get('recipient_id')
+        recipient_ids = request.data.get('recipient_ids', [])
+        # Fallback for single recipient_id
+        single_recipient = request.data.get('recipient_id')
+        if single_recipient and single_recipient not in recipient_ids:
+            recipient_ids.append(single_recipient)
 
-        if not recipient_id:
-            return Response({'error': 'Recipient staff member required'}, status=400)
+        if not recipient_ids:
+            return Response({'error': 'Select at least one staff member to share with'}, status=400)
         if not item_ids:
             return Response({'error': 'No todo items selected for sharing'}, status=400)
 
-        try:
-            recipient = User.objects.get(id=recipient_id)
-        except User.DoesNotExist:
-            return Response({'error': 'Recipient not found'}, status=404)
+        recipients = User.objects.filter(id__in=recipient_ids)
+        if not recipients.exists():
+            return Response({'error': 'Recipients not found'}, status=404)
 
         todos = TodoItem.objects.filter(id__in=item_ids, user=user)
         created_shares = []
+        recipient_names = [r.username for r in recipients]
 
-        for todo in todos:
-            share = TodoShareRequest.objects.create(
-                sender=user,
-                recipient=recipient,
-                title=todo.title,
-                description=todo.description,
-                points_value=todo.points_value
-            )
-            created_shares.append(share.id)
+        for recipient in recipients:
+            for todo in todos:
+                share = TodoShareRequest.objects.create(
+                    sender=user,
+                    recipient=recipient,
+                    title=todo.title,
+                    description=todo.description,
+                    points_value=todo.points_value,
+                    target_date=todo.due_date
+                )
+                created_shares.append(share.id)
 
         return Response({
             'status': 'success',
             'shared_count': len(created_shares),
-            'recipient': recipient.username
+            'recipients': recipient_names
         })
 
 
@@ -232,35 +233,60 @@ class TodoShareRequestViewSet(ModelViewSet):
         # View incoming share requests sent to this user
         return TodoShareRequest.objects.filter(recipient=user).order_by("-created_at")
 
+    @action(detail=False, methods=['get'])
+    def sent_shares(self, request):
+        """
+        Endpoint for senders/admins to track status of shared to-dos sent to colleagues.
+        """
+        user = request.user
+        sent_requests = TodoShareRequest.objects.filter(sender=user).order_by("-created_at")
+        serializer = self.get_serializer(sent_requests, many=True)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
         share = self.get_object()
         if share.status != 'pending':
             return Response({'error': 'Share request already processed'}, status=400)
 
+        target_date = request.data.get('target_date') or share.target_date or timezone.now().date()
+
         share.status = 'accepted'
+        share.target_date = target_date
         share.save()
 
-        # Add shared item to recipient's personal todo list
+        # Add shared item to recipient's personal todo list with target date
         new_todo = TodoItem.objects.create(
             user=request.user,
             title=share.title,
             description=share.description,
             points_value=share.points_value,
-            shared_from=share.sender
+            shared_from=share.sender,
+            due_date=target_date
         )
 
         return Response({
             'status': 'accepted',
-            'todo_id': new_todo.id
+            'todo_id': new_todo.id,
+            'target_date': target_date
         })
 
     @action(detail=True, methods=['post'])
-    def decline(self, request, pk=None):
+    def reject(self, request, pk=None):
         share = self.get_object()
-        share.status = 'declined'
+        rejection_reason = request.data.get('rejection_reason', '').strip()
+
+        if not rejection_reason:
+            return Response({'error': 'Rejection reason is required when rejecting a task'}, status=400)
+
+        share.status = 'rejected'
+        share.rejection_reason = rejection_reason
         share.save()
-        return Response({'status': 'declined'})
+        return Response({'status': 'rejected', 'rejection_reason': rejection_reason})
+
+    @action(detail=True, methods=['post'])
+    def decline(self, request, pk=None):
+        return self.reject(request, pk)
 
 
 @api_view(['POST'])
@@ -434,7 +460,7 @@ def dashboard_stats(request):
         comments_qs = Comment.objects.filter(task__in=tasks).order_by("-created_at")[:6]
     else:
         comments_qs = Comment.objects.all().order_by("-created_at")[:6]
-        
+
     recent_activities = CommentSerializer(comments_qs, many=True).data
 
     data = {

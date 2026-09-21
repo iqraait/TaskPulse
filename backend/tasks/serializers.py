@@ -81,6 +81,7 @@ class TodoShareRequestSerializer(serializers.ModelSerializer):
         model = TodoShareRequest
         fields = [
             'id', 'sender', 'sender_username', 'recipient', 'recipient_username',
-            'title', 'description', 'points_value', 'status', 'created_at'
+            'title', 'description', 'points_value', 'status', 'rejection_reason',
+            'target_date', 'created_at'
         ]
         read_only_fields = ['sender', 'created_at']

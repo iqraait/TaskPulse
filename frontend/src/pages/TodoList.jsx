@@ -9,16 +9,18 @@ import {
   FaPlus, 
   FaShareAlt, 
   FaTrophy, 
-  FaPaperPlane, 
   FaUser, 
   FaInbox, 
   FaTrash, 
-  FaClock, 
   FaCheck, 
   FaTimes, 
   FaCalendarAlt,
-  FaExclamationCircle,
-  FaAward
+  FaAward,
+  FaListAlt,
+  FaPaperPlane,
+  FaExclamationTriangle,
+  FaInfoCircle,
+  FaUsers
 } from "react-icons/fa";
 import "./TodoList.css";
 
@@ -26,8 +28,10 @@ function TodoList() {
   const { user } = useAuth();
   const [todos, setTodos] = useState([]);
   const [incomingShares, setIncomingShares] = useState([]);
+  const [sentShares, setSentShares] = useState([]);
   const [deptStaff, setDeptStaff] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("my_todos"); // "my_todos" | "sent_shares"
 
   // New todo form inputs
   const [newTitle, setNewTitle] = useState("");
@@ -35,28 +39,40 @@ function TodoList() {
   const [newDueDate, setNewDueDate] = useState("");
   const [adding, setAdding] = useState(false);
 
-  // Sharing state
+  // Sharing state (Multi-staff selection)
   const [selectedIds, setSelectedIds] = useState([]);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [selectedRecipient, setSelectedRecipient] = useState("");
+  const [selectedRecipientIds, setSelectedRecipientIds] = useState([]);
   const [sharing, setSharing] = useState(false);
+
+  // Accept modal state with target date
+  const [acceptingShare, setAcceptingShare] = useState(null);
+  const [acceptTargetDate, setAcceptTargetDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // Reject modal state with reason
+  const [rejectingShare, setRejectingShare] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+
   const [successBanner, setSuccessBanner] = useState("");
+  const [errorBanner, setErrorBanner] = useState("");
 
   const userDept = user?.department || "General";
 
   const fetchTodos = useCallback(async () => {
     try {
       setLoading(true);
-      const [todosRes, sharesRes, usersRes] = await Promise.all([
+      const [todosRes, sharesRes, sentSharesRes, usersRes] = await Promise.all([
         api.get("todos/"),
         api.get("todo-shares/"),
+        api.get("todo-shares/sent_shares/"),
         api.get("users/")
       ]);
 
       setTodos(todosRes.data);
-      // Filter incoming share requests that are pending
+      // Filter incoming pending share requests
       setIncomingShares(sharesRes.data.filter(s => s.status === "pending"));
-      // Filter department staff members (excluding self)
+      setSentShares(sentSharesRes.data);
+      // Department staff members (excluding self)
       setDeptStaff(usersRes.data.filter(u => u.id !== user?.id && (u.department === userDept || user?.is_superuser)));
     } catch (err) {
       console.error("Error loading todos:", err);
@@ -89,7 +105,8 @@ function TodoList() {
       setTimeout(() => setSuccessBanner(""), 3000);
     } catch (err) {
       console.error("Create todo error:", err);
-      alert("Failed to create todo item.");
+      setErrorBanner("Failed to create todo item.");
+      setTimeout(() => setErrorBanner(""), 3000);
     } finally {
       setAdding(false);
     }
@@ -136,10 +153,27 @@ function TodoList() {
     }
   };
 
+  // Multi-Staff Selection Handlers
+  const toggleRecipientSelect = (id) => {
+    if (selectedRecipientIds.includes(id)) {
+      setSelectedRecipientIds(selectedRecipientIds.filter(i => i !== id));
+    } else {
+      setSelectedRecipientIds([...selectedRecipientIds, id]);
+    }
+  };
+
+  const toggleSelectAllRecipients = () => {
+    if (selectedRecipientIds.length === deptStaff.length) {
+      setSelectedRecipientIds([]);
+    } else {
+      setSelectedRecipientIds(deptStaff.map(s => s.id));
+    }
+  };
+
   const handleShareSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedRecipient) {
-      alert("Please select a colleague to send the to-do list items to.");
+    if (selectedRecipientIds.length === 0) {
+      alert("Please select at least one staff member to send to.");
       return;
     }
 
@@ -147,43 +181,78 @@ function TodoList() {
       setSharing(true);
       const res = await api.post("todos/share_items/", {
         item_ids: selectedIds,
-        recipient_id: parseInt(selectedRecipient)
+        recipient_ids: selectedRecipientIds
       });
 
-      setSuccessBanner(`🚀 ${res.data.shared_count} To-Do items sent successfully to ${res.data.recipient}!`);
+      const recipientNames = res.data.recipients.join(", ");
+      setSuccessBanner(`🚀 ${selectedIds.length} To-Do item(s) sent successfully to (${selectedRecipientIds.length}) staff member(s): ${recipientNames}!`);
       setShowShareModal(false);
       setSelectedIds([]);
-      setSelectedRecipient("");
-      setTimeout(() => setSuccessBanner(""), 4000);
+      setSelectedRecipientIds([]);
+      fetchTodos();
+      setTimeout(() => setSuccessBanner(""), 4500);
     } catch (err) {
       console.error("Share error:", err);
-      alert("Failed to share items.");
+      setErrorBanner("Failed to share items.");
+      setTimeout(() => setErrorBanner(""), 3000);
     } finally {
       setSharing(false);
     }
   };
 
-  const handleAcceptShare = async (shareId) => {
+  // Accept Share with Target Date
+  const handleOpenAcceptModal = (share) => {
+    setAcceptingShare(share);
+    setAcceptTargetDate(share.target_date || new Date().toISOString().split('T')[0]);
+  };
+
+  const handleConfirmAcceptShare = async (e) => {
+    e.preventDefault();
+    if (!acceptingShare) return;
+
     try {
-      await api.post(`todo-shares/${shareId}/accept/`);
-      setSuccessBanner("📥 Shared To-Do added to your daily task list!");
+      await api.post(`todo-shares/${acceptingShare.id}/accept/`, {
+        target_date: acceptTargetDate
+      });
+
+      setSuccessBanner(`📥 "${acceptingShare.title}" accepted & scheduled for ${acceptTargetDate}!`);
+      setAcceptingShare(null);
       fetchTodos();
-      setTimeout(() => setSuccessBanner(""), 3500);
+      setTimeout(() => setSuccessBanner(""), 4000);
     } catch (err) {
       console.error("Accept share error:", err);
     }
   };
 
-  const handleDeclineShare = async (shareId) => {
+  // Reject Share with Reason
+  const handleOpenRejectModal = (share) => {
+    setRejectingShare(share);
+    setRejectionReason("");
+  };
+
+  const handleConfirmRejectShare = async (e) => {
+    e.preventDefault();
+    if (!rejectingShare) return;
+    if (!rejectionReason.trim()) {
+      alert("Please provide a reason for rejecting the task.");
+      return;
+    }
+
     try {
-      await api.post(`todo-shares/${shareId}/decline/`);
-      setIncomingShares(incomingShares.filter(s => s.id !== shareId));
+      await api.post(`todo-shares/${rejectingShare.id}/reject/`, {
+        rejection_reason: rejectionReason
+      });
+
+      setSuccessBanner(`❌ Task rejected and reason returned to ${rejectingShare.sender_username}.`);
+      setRejectingShare(null);
+      setRejectionReason("");
+      fetchTodos();
+      setTimeout(() => setSuccessBanner(""), 4000);
     } catch (err) {
-      console.error("Decline share error:", err);
+      console.error("Reject share error:", err);
     }
   };
 
-  const pendingCount = todos.filter(t => !t.is_completed).length;
   const completedCount = todos.filter(t => t.is_completed).length;
   const earnedPoints = completedCount * 15;
 
@@ -199,8 +268,8 @@ function TodoList() {
           {/* Header Banner */}
           <div className="todo-header-card glass-card">
             <div className="todo-header-left">
-              <h2><FaCheckSquare className="header-icon" /> My Personal Daily To-Do List</h2>
-              <p>Private workspace for your daily tasks. Complete to-dos to earn reward points & level up!</p>
+              <h2><FaCheckSquare className="header-icon" /> Personal Daily To-Do & Task Distribution</h2>
+              <p>Manage daily tasks, share with multiple team members, schedule target dates, and track rejection reasons.</p>
             </div>
 
             <div className="todo-header-stats">
@@ -227,12 +296,35 @@ function TodoList() {
             </div>
           )}
 
+          {errorBanner && (
+            <div className="error-banner todo-error-banner">
+              <FaExclamationTriangle /> {errorBanner}
+            </div>
+          )}
+
+          {/* Navigation Sub-Tabs */}
+          <div className="todo-nav-tabs">
+            <button 
+              className={`tab-btn ${activeTab === "my_todos" ? "active" : ""}`}
+              onClick={() => setActiveTab("my_todos")}
+            >
+              <FaListAlt /> My Daily Tasks ({todos.length})
+            </button>
+
+            <button 
+              className={`tab-btn ${activeTab === "sent_shares" ? "active" : ""}`}
+              onClick={() => setActiveTab("sent_shares")}
+            >
+              <FaPaperPlane /> Sent Tasks Status Audit ({sentShares.length})
+            </button>
+          </div>
+
           {/* Incoming Shared To-Dos Alert Box */}
-          {incomingShares.length > 0 && (
+          {incomingShares.length > 0 && activeTab === "my_todos" && (
             <div className="incoming-shares-alert-box glass-card">
               <div className="incoming-header-row">
                 <h4><FaInbox className="inbox-icon" /> Incoming Shared To-Dos ({incomingShares.length})</h4>
-                <span className="inbox-subtext">Colleagues in your department have sent you tasks to add to your daily list:</span>
+                <span className="inbox-subtext">Colleagues in your department have sent you tasks to add to your list:</span>
               </div>
 
               <div className="incoming-shares-list">
@@ -243,11 +335,11 @@ function TodoList() {
                       <span>From 👤 <strong>{s.sender_username}</strong> {s.description ? `— "${s.description}"` : ""}</span>
                     </div>
                     <div className="share-actions">
-                      <button className="btn btn-primary btn-sm" onClick={() => handleAcceptShare(s.id)}>
-                        <FaCheck /> Add to My List (+15 Pts)
+                      <button className="btn btn-primary btn-sm" onClick={() => handleOpenAcceptModal(s)}>
+                        <FaCheck /> Accept & Schedule Date (+15 Pts)
                       </button>
-                      <button className="btn btn-secondary btn-sm" onClick={() => handleDeclineShare(s.id)}>
-                        <FaTimes /> Decline
+                      <button className="btn btn-secondary btn-sm btn-reject-action" onClick={() => handleOpenRejectModal(s)}>
+                        <FaTimes /> Decline / Reject
                       </button>
                     </div>
                   </div>
@@ -256,151 +348,221 @@ function TodoList() {
             </div>
           )}
 
-          {/* Main Grid Layout */}
-          <div className="todo-grid-layout">
-            
-            {/* Left: To-Do Items List & Batch Share Controls */}
-            <div className="todo-left-column">
-              <div className="todo-toolbar glass-card">
-                <div className="toolbar-left">
-                  <button type="button" className="btn-select-all-todo" onClick={handleSelectAll}>
-                    {selectedIds.length === todos.length && todos.length > 0 ? <FaCheckSquare /> : <FaSquare />} Select All
-                  </button>
-                  <span className="selected-count-label">
-                    {selectedIds.length} item(s) selected
-                  </span>
+          {activeTab === "my_todos" ? (
+            /* Main Grid Layout */
+            <div className="todo-grid-layout">
+              
+              {/* Left: To-Do Items List & Batch Share Controls */}
+              <div className="todo-left-column">
+                <div className="todo-toolbar glass-card">
+                  <div className="toolbar-left">
+                    <button type="button" className="btn-select-all-todo" onClick={handleSelectAll}>
+                      {selectedIds.length === todos.length && todos.length > 0 ? <FaCheckSquare /> : <FaSquare />} Select All
+                    </button>
+                    <span className="selected-count-label">
+                      {selectedIds.length} item(s) selected
+                    </span>
+                  </div>
+
+                  {selectedIds.length > 0 && (
+                    <button 
+                      className="btn btn-primary btn-sm btn-share-trigger"
+                      onClick={() => {
+                        setSelectedRecipientIds([]);
+                        setShowShareModal(true);
+                      }}
+                    >
+                      <FaShareAlt /> Share Selected To-Dos to Staff
+                    </button>
+                  )}
                 </div>
 
-                {selectedIds.length > 0 && (
-                  <button 
-                    className="btn btn-primary btn-sm btn-share-trigger"
-                    onClick={() => setShowShareModal(true)}
-                  >
-                    <FaShareAlt /> Share Selected To-Dos to Staff
-                  </button>
-                )}
-              </div>
+                {/* Todos List */}
+                <div className="todo-list-container">
+                  {loading ? (
+                    <div className="board-loading">Loading your daily tasks...</div>
+                  ) : todos.length === 0 ? (
+                    <div className="empty-todo-box glass-card">
+                      <FaCheckSquare className="empty-icon" />
+                      <h3>Your Daily To-Do List is Empty!</h3>
+                      <p>Create a task using the form on the right or receive shared items from department staff.</p>
+                    </div>
+                  ) : (
+                    todos.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className={`todo-card glass-card ${item.is_completed ? "completed" : ""} ${selectedIds.includes(item.id) ? "selected" : ""}`}
+                      >
+                        <div className="todo-card-left">
+                          <input
+                            type="checkbox"
+                            className="todo-select-checkbox"
+                            checked={selectedIds.includes(item.id)}
+                            onChange={() => toggleSelect(item.id)}
+                          />
 
-              {/* Todos List */}
-              <div className="todo-list-container">
-                {loading ? (
-                  <div className="board-loading">Loading your daily tasks...</div>
-                ) : todos.length === 0 ? (
-                  <div className="empty-todo-box glass-card">
-                    <FaCheckSquare className="empty-icon" />
-                    <h3>Your Daily To-Do List is Empty!</h3>
-                    <p>Create a task using the form on the right or receive shared items from department staff.</p>
-                  </div>
-                ) : (
-                  todos.map((item) => (
-                    <div 
-                      key={item.id} 
-                      className={`todo-card glass-card ${item.is_completed ? "completed" : ""} ${selectedIds.includes(item.id) ? "selected" : ""}`}
-                    >
-                      <div className="todo-card-left">
-                        <input
-                          type="checkbox"
-                          className="todo-select-checkbox"
-                          checked={selectedIds.includes(item.id)}
-                          onChange={() => toggleSelect(item.id)}
-                        />
+                          <button 
+                            type="button" 
+                            className={`todo-check-btn ${item.is_completed ? "checked" : ""}`}
+                            onClick={() => handleToggleComplete(item.id)}
+                            title={item.is_completed ? "Mark pending" : "Mark completed (+15 Pts)"}
+                          >
+                            {item.is_completed ? <FaCheckSquare /> : <FaSquare />}
+                          </button>
 
-                        <button 
-                          type="button" 
-                          className={`todo-check-btn ${item.is_completed ? "checked" : ""}`}
-                          onClick={() => handleToggleComplete(item.id)}
-                          title={item.is_completed ? "Mark pending" : "Mark completed (+15 Pts)"}
-                        >
-                          {item.is_completed ? <FaCheckSquare /> : <FaSquare />}
-                        </button>
-
-                        <div className="todo-text-block">
-                          <h4 className="todo-title">{item.title}</h4>
-                          {item.description && <p className="todo-desc">{item.description}</p>}
-                          <div className="todo-meta">
-                            {item.shared_from_username && (
-                              <span className="meta-shared-tag">
-                                📩 Shared from: <strong>{item.shared_from_username}</strong>
-                              </span>
-                            )}
-                            {item.due_date && (
-                              <span className="meta-date-tag">
-                                <FaCalendarAlt /> Due: {item.due_date}
-                              </span>
-                            )}
-                            <span className="meta-pts-tag">+15 Reward Points</span>
+                          <div className="todo-text-block">
+                            <h4 className="todo-title">{item.title}</h4>
+                            {item.description && <p className="todo-desc">{item.description}</p>}
+                            <div className="todo-meta">
+                              {item.shared_from_username && (
+                                <span className="meta-shared-tag">
+                                  📩 Shared from: <strong>{item.shared_from_username}</strong>
+                                </span>
+                              )}
+                              {item.due_date && (
+                                <span className="meta-date-tag">
+                                  <FaCalendarAlt /> Target: {item.due_date}
+                                </span>
+                              )}
+                              <span className="meta-pts-tag">+15 Reward Points</span>
+                            </div>
                           </div>
                         </div>
+
+                        <button 
+                          className="btn-delete-todo" 
+                          onClick={() => handleDeleteTodo(item.id)}
+                          title="Delete item"
+                        >
+                          <FaTrash />
+                        </button>
                       </div>
+                    ))
+                  )}
+                </div>
+              </div>
 
-                      <button 
-                        className="btn-delete-todo" 
-                        onClick={() => handleDeleteTodo(item.id)}
-                        title="Delete item"
-                      >
-                        <FaTrash />
-                      </button>
+              {/* Right: Quick Create Form */}
+              <div className="todo-right-column">
+                <div className="quick-create-card glass-card">
+                  <h3><FaPlus className="header-icon" /> Add Daily To-Do Task</h3>
+                  <p className="card-sub">This task remains private to you unless shared with colleagues.</p>
+
+                  <form onSubmit={handleCreateTodo} className="quick-todo-form">
+                    <div className="form-group">
+                      <label className="form-label">Task Title *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g., Review morning server backup logs"
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        required
+                      />
                     </div>
-                  ))
-                )}
+
+                    <div className="form-group">
+                      <label className="form-label">Notes / Description (Optional)</label>
+                      <textarea
+                        className="form-textarea"
+                        rows="3"
+                        placeholder="Additional details or steps..."
+                        value={newDesc}
+                        onChange={(e) => setNewDesc(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Target Date</label>
+                      <input
+                        type="date"
+                        className="form-input"
+                        value={newDueDate}
+                        onChange={(e) => setNewDueDate(e.target.value)}
+                      />
+                    </div>
+
+                    <button type="submit" className="btn btn-primary btn-block" disabled={adding}>
+                      {adding ? "Adding..." : "+ Add to My Daily List (+15 Pts)"}
+                    </button>
+                  </form>
+                </div>
               </div>
+
             </div>
-
-            {/* Right: Quick Create Form */}
-            <div className="todo-right-column">
-              <div className="quick-create-card glass-card">
-                <h3><FaPlus className="header-icon" /> Add Daily To-Do Task</h3>
-                <p className="card-sub">This task remains private to you unless shared with colleagues.</p>
-
-                <form onSubmit={handleCreateTodo} className="quick-todo-form">
-                  <div className="form-group">
-                    <label className="form-label">Task Title *</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="e.g., Review morning server backup logs"
-                      value={newTitle}
-                      onChange={(e) => setNewTitle(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Notes / Description (Optional)</label>
-                    <textarea
-                      className="form-textarea"
-                      rows="3"
-                      placeholder="Additional details or steps..."
-                      value={newDesc}
-                      onChange={(e) => setNewDesc(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Target Date</label>
-                    <input
-                      type="date"
-                      className="form-input"
-                      value={newDueDate}
-                      onChange={(e) => setNewDueDate(e.target.value)}
-                    />
-                  </div>
-
-                  <button type="submit" className="btn btn-primary btn-block" disabled={adding}>
-                    {adding ? "Adding..." : "+ Add to My Daily List (+15 Pts)"}
-                  </button>
-                </form>
+          ) : (
+            /* Sent Shares Status Tracking Tab */
+            <div className="sent-shares-container glass-card">
+              <div className="sent-shares-header">
+                <h3><FaPaperPlane className="header-icon" /> Outgoing Shared Tasks Status Audit</h3>
+                <p>Track whether staff members accepted or rejected tasks you distributed to them.</p>
               </div>
+
+              {sentShares.length === 0 ? (
+                <div className="empty-sent-box">
+                  <FaInfoCircle className="empty-icon" />
+                  <p>You haven't shared any daily to-do tasks with colleagues yet.</p>
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="sent-shares-table">
+                    <thead>
+                      <tr>
+                        <th>Recipient Staff</th>
+                        <th>Task Title</th>
+                        <th>Date Sent</th>
+                        <th>Status</th>
+                        <th>Target Date / Rejection Reason</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sentShares.map((s) => (
+                        <tr key={s.id}>
+                          <td>
+                            <strong className="recipient-name">👤 {s.recipient_username}</strong>
+                          </td>
+                          <td>
+                            <div className="sent-title-block">
+                              <strong>{s.title}</strong>
+                              {s.description && <span className="sent-desc">{s.description}</span>}
+                            </div>
+                          </td>
+                          <td className="date-col">
+                            {new Date(s.created_at).toLocaleDateString()} {new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          <td>
+                            {s.status === 'pending' && <span className="status-badge status-pending">⏳ Pending</span>}
+                            {s.status === 'accepted' && <span className="status-badge status-accepted">✅ Accepted</span>}
+                            {(s.status === 'rejected' || s.status === 'declined') && <span className="status-badge status-rejected">❌ Rejected</span>}
+                          </td>
+                          <td>
+                            {s.status === 'accepted' && (
+                              <span className="target-date-pill">
+                                <FaCalendarAlt /> Scheduled: {s.target_date || "Today"}
+                              </span>
+                            )}
+                            {(s.status === 'rejected' || s.status === 'declined') && (
+                              <div className="rejection-reason-box">
+                                <strong>Reason:</strong> <em>"{s.rejection_reason || "No reason specified"}"</em>
+                              </div>
+                            )}
+                            {s.status === 'pending' && <span className="text-muted">Awaiting recipient action...</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
+          )}
 
-          </div>
-
-          {/* Share Modal */}
+          {/* Multi-Staff Share Modal */}
           {showShareModal && (
             <div className="modal-overlay" onClick={() => setShowShareModal(false)}>
               <div className="modal-content share-modal-box" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                  <h3><FaShareAlt /> Share Selected To-Dos to Department Staff</h3>
+                  <h3><FaShareAlt /> Share Selected To-Dos to Multiple Staff Members</h3>
                   <button className="icon-btn" onClick={() => setShowShareModal(false)}>
                     <FaTimes />
                   </button>
@@ -409,24 +571,38 @@ function TodoList() {
                 <form onSubmit={handleShareSubmit}>
                   <div className="modal-body">
                     <p className="share-modal-desc">
-                      Sending <strong>{selectedIds.length} selected task(s)</strong> to a staff member in <strong>{userDept}</strong>. The recipient can accept and add them to their own daily to-do list.
+                      Distributing <strong>{selectedIds.length} selected task(s)</strong> to staff in <strong>{userDept}</strong>. Select one or multiple team members below:
                     </p>
 
-                    <div className="form-group">
-                      <label className="form-label"><FaUser /> Select Staff Member *</label>
-                      <select
-                        className="form-select"
-                        value={selectedRecipient}
-                        onChange={(e) => setSelectedRecipient(e.target.value)}
-                        required
+                    <div className="multi-staff-select-header">
+                      <button 
+                        type="button" 
+                        className="btn-select-all-staff"
+                        onClick={toggleSelectAllRecipients}
                       >
-                        <option value="">-- Choose Staff Member in {userDept} --</option>
-                        {deptStaff.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            👤 {s.username} ({s.role || "staff"}) — {s.department || "General"}
-                          </option>
-                        ))}
-                      </select>
+                        {selectedRecipientIds.length === deptStaff.length && deptStaff.length > 0 ? <FaCheckSquare /> : <FaSquare />} Select All Department Staff ({deptStaff.length})
+                      </button>
+                      <span className="staff-selected-count">{selectedRecipientIds.length} staff selected</span>
+                    </div>
+
+                    <div className="staff-checkbox-list">
+                      {deptStaff.length === 0 ? (
+                        <p className="text-muted padding-12">No other staff members found in your department.</p>
+                      ) : (
+                        deptStaff.map((staff) => (
+                          <label key={staff.id} className={`staff-checkbox-item ${selectedRecipientIds.includes(staff.id) ? "selected" : ""}`}>
+                            <input
+                              type="checkbox"
+                              checked={selectedRecipientIds.includes(staff.id)}
+                              onChange={() => toggleRecipientSelect(staff.id)}
+                            />
+                            <div className="staff-checkbox-info">
+                              <strong>👤 {staff.username}</strong>
+                              <span>{staff.role || "staff"} • {staff.department || "General"}</span>
+                            </div>
+                          </label>
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -434,8 +610,96 @@ function TodoList() {
                     <button type="button" className="btn btn-secondary" onClick={() => setShowShareModal(false)}>
                       Cancel
                     </button>
-                    <button type="submit" className="btn btn-primary" disabled={sharing}>
-                      {sharing ? "Sending..." : "📤 Send To-Dos Now"}
+                    <button type="submit" className="btn btn-primary" disabled={sharing || selectedRecipientIds.length === 0}>
+                      {sharing ? "Sending..." : `📤 Send to ${selectedRecipientIds.length} Staff Member(s)`}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Accept Modal with Target Date Selection */}
+          {acceptingShare && (
+            <div className="modal-overlay" onClick={() => setAcceptingShare(null)}>
+              <div className="modal-content accept-modal-box" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h3><FaCheck /> Accept Shared To-Do & Set Target Date</h3>
+                  <button className="icon-btn" onClick={() => setAcceptingShare(null)}>
+                    <FaTimes />
+                  </button>
+                </div>
+
+                <form onSubmit={handleConfirmAcceptShare}>
+                  <div className="modal-body">
+                    <div className="accept-task-summary">
+                      <h4>{acceptingShare.title}</h4>
+                      {acceptingShare.description && <p>{acceptingShare.description}</p>}
+                      <span className="sender-tag">Shared by: 👤 <strong>{acceptingShare.sender_username}</strong></span>
+                    </div>
+
+                    <div className="form-group margin-top-16">
+                      <label className="form-label"><FaCalendarAlt /> Choose Target Date for Your Daily List *</label>
+                      <input
+                        type="date"
+                        className="form-input"
+                        value={acceptTargetDate}
+                        onChange={(e) => setAcceptTargetDate(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setAcceptingShare(null)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      ✅ Add to My Daily List (+15 Pts)
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Reject Modal with Mandatory Reason */}
+          {rejectingShare && (
+            <div className="modal-overlay" onClick={() => setRejectingShare(null)}>
+              <div className="modal-content reject-modal-box" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header modal-header-danger">
+                  <h3><FaTimes /> Reject Shared Task Request</h3>
+                  <button className="icon-btn" onClick={() => setRejectingShare(null)}>
+                    <FaTimes />
+                  </button>
+                </div>
+
+                <form onSubmit={handleConfirmRejectShare}>
+                  <div className="modal-body">
+                    <div className="reject-task-summary">
+                      <h4>{rejectingShare.title}</h4>
+                      <p>Sent by: 👤 <strong>{rejectingShare.sender_username}</strong></p>
+                    </div>
+
+                    <div className="form-group margin-top-16">
+                      <label className="form-label"><FaExclamationTriangle /> Reason for Rejection * (Required)</label>
+                      <textarea
+                        className="form-textarea"
+                        rows="3"
+                        placeholder="e.g., Currently overloaded with 4 urgent IT server support tickets..."
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setRejectingShare(null)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-danger">
+                      ❌ Send Rejection & Reason
                     </button>
                   </div>
                 </form>
