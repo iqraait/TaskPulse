@@ -1,12 +1,12 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from django.db.models import Q, Count
 from django.utils import timezone
 
-from .models import Task, Comment, TaskFlowLog, PushSubscription
-from .serializers import TaskSerializer, CommentSerializer
+from .models import Task, Comment, TaskFlowLog, PushSubscription, TodoItem, TodoShareRequest
+from .serializers import TaskSerializer, CommentSerializer, TodoItemSerializer, TodoShareRequestSerializer
 from users.models import User
 
 
@@ -149,6 +149,120 @@ class CommentViewSet(ModelViewSet):
         serializer.save(user=user)
 
 
+class TodoItemViewSet(ModelViewSet):
+    serializer_class = TodoItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or user.is_anonymous:
+            return TodoItem.objects.none()
+        # Strictly personal to-do list: staff can only see their own to-do items
+        return TodoItem.objects.filter(user=user).order_by("is_completed", "-created_at")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def toggle_complete(self, request, pk=None):
+        todo = self.get_object()
+        todo.is_completed = not todo.is_completed
+        if todo.is_completed:
+            todo.completed_at = timezone.now()
+        else:
+            todo.completed_at = None
+        todo.save()
+
+        # If shared, we can log or notify sender
+        if todo.is_completed and todo.shared_from:
+            # Shared todo completed notification logic placeholder
+            pass
+
+        return Response({
+            'status': 'success',
+            'is_completed': todo.is_completed,
+            'completed_at': todo.completed_at,
+            'points_awarded': todo.points_value if todo.is_completed else 0
+        })
+
+    @action(detail=False, methods=['post'])
+    def share_items(self, request):
+        user = request.user
+        item_ids = request.data.get('item_ids', [])
+        recipient_id = request.data.get('recipient_id')
+
+        if not recipient_id:
+            return Response({'error': 'Recipient staff member required'}, status=400)
+        if not item_ids:
+            return Response({'error': 'No todo items selected for sharing'}, status=400)
+
+        try:
+            recipient = User.objects.get(id=recipient_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Recipient not found'}, status=404)
+
+        todos = TodoItem.objects.filter(id__in=item_ids, user=user)
+        created_shares = []
+
+        for todo in todos:
+            share = TodoShareRequest.objects.create(
+                sender=user,
+                recipient=recipient,
+                title=todo.title,
+                description=todo.description,
+                points_value=todo.points_value
+            )
+            created_shares.append(share.id)
+
+        return Response({
+            'status': 'success',
+            'shared_count': len(created_shares),
+            'recipient': recipient.username
+        })
+
+
+class TodoShareRequestViewSet(ModelViewSet):
+    serializer_class = TodoShareRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or user.is_anonymous:
+            return TodoShareRequest.objects.none()
+        # View incoming share requests sent to this user
+        return TodoShareRequest.objects.filter(recipient=user).order_by("-created_at")
+
+    @action(detail=True, methods=['post'])
+    def accept(self, request, pk=None):
+        share = self.get_object()
+        if share.status != 'pending':
+            return Response({'error': 'Share request already processed'}, status=400)
+
+        share.status = 'accepted'
+        share.save()
+
+        # Add shared item to recipient's personal todo list
+        new_todo = TodoItem.objects.create(
+            user=request.user,
+            title=share.title,
+            description=share.description,
+            points_value=share.points_value,
+            shared_from=share.sender
+        )
+
+        return Response({
+            'status': 'accepted',
+            'todo_id': new_todo.id
+        })
+
+    @action(detail=True, methods=['post'])
+    def decline(self, request, pk=None):
+        share = self.get_object()
+        share.status = 'declined'
+        share.save()
+        return Response({'status': 'declined'})
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticatedOrReadOnly])
 def subscribe_push(request):
@@ -193,6 +307,83 @@ def public_ticket_schedule(request):
             "assigned_to": task.assigned_to.username if task.assigned_to else "Unassigned",
         })
     return Response(date_map)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def leaderboard_stats(request):
+    """
+    Common Gamified Performance & Rewards Leaderboard accessible to ALL users without restriction.
+    Calculates points, levels, completed tasks, and completed daily todos.
+    """
+    all_users = User.objects.all().order_by("id")
+    leaderboard = []
+
+    for u in all_users:
+        # Completed Tasks Points
+        tasks_done = Task.objects.filter(
+            Q(assigned_to=u) | Q(assigned_to_secondary=u)
+        ).filter(status="done")
+
+        high_tasks = tasks_done.filter(priority="high").count()
+        med_tasks = tasks_done.filter(priority="medium").count()
+        low_tasks = tasks_done.filter(priority="low").count()
+
+        task_points = (high_tasks * 30) + (med_tasks * 20) + (low_tasks * 10)
+
+        # Completed Daily Todos Points
+        todos_done = TodoItem.objects.filter(user=u, is_completed=True)
+        todo_points = sum([t.points_value for t in todos_done]) or (todos_done.count() * 15)
+
+        total_points = task_points + todo_points
+        tasks_completed_count = tasks_done.count()
+        todos_completed_count = todos_done.count()
+
+        # Level & Badge Tier Matrix
+        if total_points >= 500:
+            level_name = "Level 5 - Elite Champion 👑"
+            badge = "👑 Elite"
+            rank_color = "#eab308"
+        elif total_points >= 300:
+            level_name = "Level 4 - Master Executor ⚡"
+            badge = "💎 Master"
+            rank_color = "#3b82f6"
+        elif total_points >= 150:
+            level_name = "Level 3 - Gold Specialist 🥇"
+            badge = "🥇 Specialist"
+            rank_color = "#10b981"
+        elif total_points >= 50:
+            level_name = "Level 2 - Silver Achiever 🥈"
+            badge = "🥈 Achiever"
+            rank_color = "#8b5cf6"
+        else:
+            level_name = "Level 1 - Bronze Starter 🥉"
+            badge = "🥉 Starter"
+            rank_color = "#64748b"
+
+        leaderboard.append({
+            "user_id": u.id,
+            "username": u.username,
+            "role": u.role or ('superadmin' if u.is_superuser else 'staff'),
+            "department": u.department or "General",
+            "total_points": total_points,
+            "task_points": task_points,
+            "todo_points": todo_points,
+            "tasks_completed": tasks_completed_count,
+            "todos_completed": todos_completed_count,
+            "level_name": level_name,
+            "badge": badge,
+            "rank_color": rank_color
+        })
+
+    # Sort leaderboard by total_points descending
+    leaderboard.sort(key=lambda x: x["total_points"], reverse=True)
+
+    # Add Rank Position (1st, 2nd, 3rd, etc.)
+    for idx, entry in enumerate(leaderboard):
+        entry["rank"] = idx + 1
+
+    return Response(leaderboard)
 
 
 @api_view(['GET'])

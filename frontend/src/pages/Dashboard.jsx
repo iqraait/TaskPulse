@@ -16,25 +16,32 @@ import {
   FaLayerGroup,
   FaHistory,
   FaArrowUp,
-  FaSyncAlt
+  FaSyncAlt,
+  FaTrophy,
+  FaCrown,
+  FaMedal,
+  FaAward,
+  FaCheckSquare,
+  FaFire,
+  FaArrowRight
 } from "react-icons/fa";
 import "./Dashboard.css";
 
 function Dashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
-      let res;
-      try {
-        res = await api.get("dashboard_stats/");
-      } catch {
-        res = await api.get("dashboard/");
-      }
-      setStats(res.data);
+      const [statsRes, leadRes] = await Promise.all([
+        api.get("dashboard_stats/").catch(() => api.get("dashboard/")),
+        api.get("leaderboard/").catch(() => ({ data: [] }))
+      ]);
+      setStats(statsRes.data);
+      setLeaderboard(leadRes.data || []);
     } catch (err) {
       console.error("Dashboard stats error:", err);
     } finally {
@@ -77,6 +84,8 @@ function Dashboard() {
   const medPct = totalTickets > 0 ? Math.round((medCount / totalTickets) * 100) : 0;
   const lowPct = totalTickets > 0 ? Math.round((lowCount / totalTickets) * 100) : 0;
 
+  const currentUserLeaderboard = leaderboard.find(u => u.user_id === user?.id);
+
   return (
     <div className="app-layout">
       <Sidebar />
@@ -103,9 +112,40 @@ function Dashboard() {
           </div>
 
           {loading ? (
-            <div className="dashboard-loading-box">Loading TicketPro Analytics...</div>
+            <div className="dashboard-loading-box">Loading TaskPulse Analytics...</div>
           ) : (
             <div className="dashboard-body">
+
+              {/* Common Team Gamification & Performance Rewards Banner */}
+              <div className="gamification-dashboard-widget glass-card">
+                <div className="widget-header-left">
+                  <div className="trophy-badge-icon"><FaTrophy /></div>
+                  <div>
+                    <h4>Team Performance & Rewards Leaderboard</h4>
+                    <p>Common rank view for all staff. Complete tickets & daily to-dos to level up!</p>
+                  </div>
+                </div>
+
+                <div className="widget-leaders-row">
+                  {leaderboard.slice(0, 3).map((item, idx) => (
+                    <div key={item.user_id} className={`leader-pill-card rank-${idx + 1}`}>
+                      <span className="rank-crown">
+                        {idx === 0 ? <FaCrown style={{color: '#eab308'}} /> : idx === 1 ? <FaMedal style={{color: '#94a3b8'}} /> : <FaAward style={{color: '#d97706'}} />}
+                      </span>
+                      <div className="leader-info">
+                        <strong>{item.username}</strong>
+                        <span>{item.level_name.split('-')[1] || item.level_name}</span>
+                      </div>
+                      <span className="leader-pts"><FaFire /> {item.total_points} PTS</span>
+                    </div>
+                  ))}
+                </div>
+
+                <a href="/leaderboard" className="btn btn-primary btn-sm btn-view-leaderboard">
+                  Full Leaderboard <FaArrowRight />
+                </a>
+              </div>
+
               {/* Top 9 Metrics Cards Row */}
               <div className="ticketpro-metrics-grid">
                 <div className="metric-card metric-total">

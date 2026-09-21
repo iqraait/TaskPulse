@@ -9,7 +9,9 @@ import {
   FaChartLine, 
   FaSignOutAlt, 
   FaChevronLeft, 
-  FaChevronRight 
+  FaChevronRight,
+  FaCheckSquare,
+  FaTrophy
 } from "react-icons/fa";
 import "./Sidebar.css";
 
@@ -23,6 +25,8 @@ function Sidebar() {
 
   const navItems = [
     { path: "/dashboard", label: "Task Board", icon: FaColumns },
+    { path: "/todos", label: "My Daily To-Do", icon: FaCheckSquare },
+    { path: "/leaderboard", label: "Leaderboard & Rewards", icon: FaTrophy },
     { path: "/tasks", label: "Task Directory", icon: FaTasks },
     { path: "/create-task", label: "Create Task", icon: FaPlusCircle },
     { path: "/staff", label: "Staff Management", icon: FaUsers, superAdminOnly: true },

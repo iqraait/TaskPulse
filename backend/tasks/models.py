@@ -133,3 +133,57 @@ class PushSubscription(models.Model):
 
     def __str__(self):
         return f"PushSubscription for {self.user.username}"
+
+
+class TodoItem(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="todos"
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default="")
+    is_completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    points_value = models.IntegerField(default=15)
+
+    shared_from = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="shared_out_todos"
+    )
+
+    due_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['is_completed', '-created_at']
+
+    def __str__(self):
+        return f"Todo: {self.title} ({self.user.username})"
+
+
+class TodoShareRequest(models.Model):
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="sent_todo_shares"
+    )
+    recipient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="received_todo_shares"
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default="")
+    points_value = models.IntegerField(default=15)
+    status = models.CharField(max_length=20, default="pending")  # pending, accepted, declined
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"TodoShare from {self.sender.username} to {self.recipient.username}: {self.title}"

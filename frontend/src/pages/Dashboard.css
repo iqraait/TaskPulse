@@ -45,6 +45,96 @@
   border: 1px solid #e2e8f0;
 }
 
+/* Gamification & Leaderboard Widget on Dashboard */
+.gamification-dashboard-widget {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #fefce8 100%);
+  border: 1px solid #fef08a;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.widget-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.trophy-badge-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #fef3c7;
+  color: #d97706;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.widget-header-left h4 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.widget-header-left p {
+  font-size: 0.825rem;
+  color: #64748b;
+}
+
+.widget-leaders-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.leader-pill-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.leader-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.leader-info strong {
+  font-size: 0.85rem;
+  color: #0f172a;
+}
+
+.leader-info span {
+  font-size: 0.725rem;
+  color: #64748b;
+}
+
+.leader-pts {
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: #d97706;
+  background: #fffbeb;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.btn-view-leaderboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* 9 Top Metrics Grid matching User Request */
 .ticketpro-metrics-grid {
   display: grid;

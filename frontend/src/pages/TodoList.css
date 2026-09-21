@@ -1,0 +1,361 @@
+.todo-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  margin-bottom: 24px;
+  gap: 20px;
+}
+
+.todo-header-left h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.todo-header-left p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.todo-header-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.stat-pill-gold, .stat-pill-blue {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.stat-pill-gold {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+}
+
+.stat-pill-blue {
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  color: #1e40af;
+}
+
+.stat-pill-gold .pill-icon, .stat-pill-blue .pill-icon {
+  font-size: 1.5rem;
+}
+
+.pill-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.pill-val {
+  font-size: 1.1rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.pill-lbl {
+  font-size: 0.725rem;
+  opacity: 0.85;
+}
+
+.todo-success-banner {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  padding: 14px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.incoming-shares-alert-box {
+  padding: 20px;
+  margin-bottom: 24px;
+  border-left: 5px solid #2563eb;
+  background: #eff6ff;
+}
+
+.incoming-header-row {
+  margin-bottom: 14px;
+}
+
+.incoming-header-row h4 {
+  font-size: 1.1rem;
+  color: #1e3a8a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inbox-subtext {
+  font-size: 0.85rem;
+  color: #3b82f6;
+}
+
+.incoming-shares-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.incoming-share-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #bfdbfe;
+}
+
+.share-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.share-info strong {
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.share-info span {
+  font-size: 0.825rem;
+  color: #475569;
+}
+
+.share-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Grid Layout */
+.todo-grid-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .todo-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.todo-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-select-all-todo {
+  background: transparent;
+  border: none;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.selected-count-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.btn-share-trigger {
+  background: #7c3aed;
+  border-color: #6d28d9;
+}
+
+.btn-share-trigger:hover {
+  background: #6d28d9;
+}
+
+.todo-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empty-todo-box {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.todo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.todo-card.completed {
+  opacity: 0.65;
+  background: #f8fafc;
+}
+
+.todo-card.completed .todo-title {
+  text-decoration: line-through;
+  color: #64748b;
+}
+
+.todo-card.selected {
+  border-color: #7c3aed;
+  background: #f5f3ff;
+}
+
+.todo-card-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.todo-select-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.todo-check-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.todo-check-btn.checked {
+  color: #10b981;
+}
+
+.todo-text-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.todo-title {
+  font-size: 0.975rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.todo-desc {
+  font-size: 0.825rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.todo-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 0.775rem;
+}
+
+.meta-shared-tag {
+  background: #f3e8ff;
+  color: #6b21a8;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.meta-date-tag {
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-pts-tag {
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.btn-delete-todo {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 6px;
+
+  transition: color 0.2s ease;
+}
+
+.btn-delete-todo:hover {
+  color: #ef4444;
+}
+
+.quick-create-card {
+  padding: 24px;
+}
+
+.quick-create-card h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-sub {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.quick-todo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.share-modal-box {
+  max-width: 520px;
+}
+
+.share-modal-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}

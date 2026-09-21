@@ -7,6 +7,8 @@ import CreateTask from "./pages/CreateTask";
 import TaskList from "./pages/TaskList";
 import StaffManagement from "./pages/StaffManagement";
 import Reports from "./pages/Reports";
+import TodoList from "./pages/TodoList";
+import Leaderboard from "./pages/Leaderboard";
 
 const ProtectedRoute = ({ children }) => {
   const { token, loading } = useAuth();
@@ -27,6 +29,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/todos"
+            element={
+              <ProtectedRoute>
+                <TodoList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/leaderboard"
+            element={
+              <ProtectedRoute>
+                <Leaderboard />
               </ProtectedRoute>
             }
           />

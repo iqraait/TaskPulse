@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Task, Comment, TaskFlowLog
+from .models import Task, Comment, TaskFlowLog, TodoItem, TodoShareRequest
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -55,3 +55,32 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def get_is_reassigned(self, obj):
         return obj.flow_logs.filter(action_type="reassigned").exists()
+
+
+class TodoItemSerializer(serializers.ModelSerializer):
+    shared_from_username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TodoItem
+        fields = [
+            'id', 'user', 'title', 'description', 'is_completed',
+            'completed_at', 'points_value', 'shared_from', 'shared_from_username',
+            'due_date', 'created_at'
+        ]
+        read_only_fields = ['user', 'completed_at', 'created_at']
+
+    def get_shared_from_username(self, obj):
+        return obj.shared_from.username if obj.shared_from else None
+
+
+class TodoShareRequestSerializer(serializers.ModelSerializer):
+    sender_username = serializers.CharField(source='sender.username', read_only=True)
+    recipient_username = serializers.CharField(source='recipient.username', read_only=True)
+
+    class Meta:
+        model = TodoShareRequest
+        fields = [
+            'id', 'sender', 'sender_username', 'recipient', 'recipient_username',
+            'title', 'description', 'points_value', 'status', 'created_at'
+        ]
+        read_only_fields = ['sender', 'created_at']
