@@ -53,6 +53,10 @@ function TodoList() {
   const [rejectingShare, setRejectingShare] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
+  // Completion modal state with optional completion note
+  const [completingTodo, setCompletingTodo] = useState(null);
+  const [completionNote, setCompletionNote] = useState("");
+
   const [successBanner, setSuccessBanner] = useState("");
   const [errorBanner, setErrorBanner] = useState("");
 
@@ -115,14 +119,32 @@ function TodoList() {
     }
   };
 
-  const handleToggleComplete = async (id) => {
+  const handleOpenCompleteModal = (item) => {
+    if (item.is_completed) {
+      executeToggleComplete(item.id, "");
+    } else {
+      setCompletingTodo(item);
+      setCompletionNote("");
+    }
+  };
+
+  const executeToggleComplete = async (id, note) => {
     try {
-      const res = await api.post(`todos/${id}/toggle_complete/`);
-      setTodos(todos.map(t => t.id === id ? { ...t, is_completed: res.data.is_completed, completed_at: res.data.completed_at } : t));
+      const res = await api.post(`todos/${id}/toggle_complete/`, {
+        completion_note: note
+      });
+      setTodos(todos.map(t => t.id === id ? { 
+        ...t, 
+        is_completed: res.data.is_completed, 
+        completed_at: res.data.completed_at,
+        completion_note: res.data.completion_note 
+      } : t));
       if (res.data.is_completed) {
         setSuccessBanner("🎉 +15 Reward Points Earned for completing this task!");
         setTimeout(() => setSuccessBanner(""), 3500);
       }
+      setCompletingTodo(null);
+      setCompletionNote("");
     } catch (err) {
       console.error("Toggle todo error:", err);
     }
@@ -407,7 +429,7 @@ function TodoList() {
                           <button 
                             type="button" 
                             className={`todo-check-btn ${item.is_completed ? "checked" : ""}`}
-                            onClick={() => handleToggleComplete(item.id)}
+                            onClick={() => handleOpenCompleteModal(item)}
                             title={item.is_completed ? "Mark pending" : "Mark completed (+15 Pts)"}
                           >
                             {item.is_completed ? <FaCheckSquare /> : <FaSquare />}
@@ -416,6 +438,11 @@ function TodoList() {
                           <div className="todo-text-block">
                             <h4 className="todo-title">{item.title}</h4>
                             {item.description && <p className="todo-desc">{item.description}</p>}
+                            {item.completion_note && (
+                              <div className="todo-completion-note-tag">
+                                💬 <strong>Completion Note:</strong> "{item.completion_note}"
+                              </div>
+                            )}
                             <div className="todo-meta">
                               {item.shared_from_username && (
                                 <span className="meta-shared-tag">
@@ -703,6 +730,49 @@ function TodoList() {
                     </button>
                     <button type="submit" className="btn btn-danger">
                       ❌ Send Rejection & Reason
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Complete Task Modal with Optional Completion Note */}
+          {completingTodo && (
+            <div className="modal-overlay" onClick={() => setCompletingTodo(null)}>
+              <div className="modal-content accept-modal-box" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h3><FaCheckSquare className="header-icon" /> Complete To-Do Task</h3>
+                  <button className="icon-btn" onClick={() => setCompletingTodo(null)}>
+                    <FaTimes />
+                  </button>
+                </div>
+
+                <form onSubmit={(e) => { e.preventDefault(); executeToggleComplete(completingTodo.id, completionNote); }}>
+                  <div className="modal-body">
+                    <div className="accept-task-summary">
+                      <h4>{completingTodo.title}</h4>
+                      {completingTodo.description && <p>{completingTodo.description}</p>}
+                    </div>
+
+                    <div className="form-group margin-top-16">
+                      <label className="form-label">Completion Note / Comments (Optional)</label>
+                      <textarea
+                        className="form-textarea"
+                        rows="3"
+                        placeholder="Add optional notes, outcome summary, or completion comments..."
+                        value={completionNote}
+                        onChange={(e) => setCompletionNote(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setCompletingTodo(null)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      ✅ Save & Mark Complete (+15 Pts)
                     </button>
                   </div>
                 </form>

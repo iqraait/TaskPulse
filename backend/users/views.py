@@ -1,16 +1,26 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.db.models import Q
 
-from .models import User
-from .serializers import UserSerializer, CustomTokenObtainPairSerializer
+from .models import User, Department
+from .serializers import UserSerializer, DepartmentSerializer, CustomTokenObtainPairSerializer
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+
+class DepartmentViewSet(ModelViewSet):
+    queryset = Department.objects.all().order_by('name')
+    serializer_class = DepartmentSerializer
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        name = serializer.validated_data.get('name', '').strip()
+        serializer.save(name=name)
 
 
 class UserViewSet(ModelViewSet):
@@ -25,9 +35,9 @@ class UserViewSet(ModelViewSet):
         if user and user.is_authenticated:
             role = user.role or ('superadmin' if user.is_superuser else 'staff')
             if role == 'superadmin':
-                pass # Super Admin sees all users
-            elif role == 'admin' and user.department:
-                # Department admin sees users in their department
+                pass # Super Admin sees all users across all departments
+            elif role in ['dept_admin', 'admin'] and user.department:
+                # Department head sees staff in their own department + themselves
                 queryset = queryset.filter(Q(department__iexact=user.department) | Q(id=user.id))
             elif role == 'staff' and user.department:
                 queryset = queryset.filter(department__iexact=user.department)
@@ -37,22 +47,69 @@ class UserViewSet(ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user if self.request.user.is_authenticated else None
         role_requested = self.request.data.get('role', 'staff')
-        dept_requested = self.request.data.get('department', '')
+        dept_requested = self.request.data.get('department', '').strip()
 
-        # Enforce department admin hierarchy rules
-        if user and user.is_authenticated and not user.is_superuser and user.role == 'admin':
-            role_requested = 'staff' # Admins can only create staff
+        # Enforce Role-Based Workflow Rules:
+        if user and user.is_authenticated and not (user.role == 'superadmin' or user.is_superuser):
+            # Non-superadmins (Department Heads & Staff) can ONLY create 'staff' in their OWN department
+            role_requested = 'staff'
             if user.department:
-                dept_requested = user.department # Lock department to admin's department
+                dept_requested = user.department
+
+        # Auto-create Department record if it doesn't exist yet
+        if dept_requested:
+            Department.objects.get_or_create(name=dept_requested)
 
         serializer.save(
             role=role_requested,
             department=dept_requested,
-            is_superuser=(role_requested == 'superadmin')
+            is_superuser=(role_requested == 'superadmin'),
+            created_by=user
         )
+
+    def update(self, request, *args, **kwargs):
+        target_user = self.get_object()
+        user = request.user
+
+        # Super Admin Protection Rule
+        if (target_user.role == 'superadmin' or target_user.is_superuser):
+            if user.is_authenticated and not (user.role == 'superadmin' or user.is_superuser):
+                return Response(
+                    {'error': 'Permission denied. Super Admin accounts are isolated and can only be modified by a Super Admin.'},
+                    status=403
+                )
+
+        # Department Head Constraint Rule
+        if user.is_authenticated and not (user.role == 'superadmin' or user.is_superuser):
+            if user.role in ['dept_admin', 'admin']:
+                if target_user.department and target_user.department.lower() != user.department.lower():
+                    return Response(
+                        {'error': f'Permission denied. You can only manage staff within your department ({user.department}).'},
+                        status=403
+                    )
+
+        return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         user_to_delete = self.get_object()
+        user = request.user
+
+        # Super Admin Protection Rule
+        if (user_to_delete.role == 'superadmin' or user_to_delete.is_superuser):
+            if user.is_authenticated and not (user.role == 'superadmin' or user.is_superuser):
+                return Response(
+                    {'error': 'Permission denied. Super Admin accounts are protected and cannot be deleted by Department Heads or Staff.'},
+                    status=403
+                )
+
+        # Department Head Constraint Rule
+        if user.is_authenticated and not (user.role == 'superadmin' or user.is_superuser):
+            if user.role in ['dept_admin', 'admin']:
+                if user_to_delete.department and user_to_delete.department.lower() != user.department.lower():
+                    return Response(
+                        {'error': f'Permission denied. You can only manage staff within your department ({user.department}).'},
+                        status=403
+                    )
 
         # Check active assigned tasks (primary or secondary)
         from tasks.models import Task

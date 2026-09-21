@@ -265,9 +265,12 @@ class TodoItemViewSet(ModelViewSet):
     @action(detail=True, methods=['post'])
     def toggle_complete(self, request, pk=None):
         todo = self.get_object()
+        completion_note = request.data.get('completion_note', request.data.get('notes', request.data.get('comments', ''))).strip()
         todo.is_completed = not todo.is_completed
         if todo.is_completed:
             todo.completed_at = timezone.now()
+            if completion_note:
+                todo.completion_note = completion_note
         else:
             todo.completed_at = None
         todo.save()
@@ -276,6 +279,7 @@ class TodoItemViewSet(ModelViewSet):
             'status': 'success',
             'is_completed': todo.is_completed,
             'completed_at': todo.completed_at,
+            'completion_note': todo.completion_note,
             'points_awarded': todo.points_value if todo.is_completed else 0
         })
 

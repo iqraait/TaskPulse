@@ -3,14 +3,18 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import { FaPlusCircle, FaArrowLeft, FaCheck, FaPaperclip, FaFileAlt, FaImage, FaTrashAlt, FaUsers, FaExclamationTriangle } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
+import { FaPlusCircle, FaArrowLeft, FaCheck, FaPaperclip, FaFileAlt, FaImage, FaTrashAlt, FaUsers, FaExclamationTriangle, FaBuilding } from "react-icons/fa";
 import "./CreateTask.css";
 
 function CreateTask() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'superadmin' || user?.is_superuser;
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [department, setDepartment] = useState("IT Department");
+  const [department, setDepartment] = useState(user?.department || "IT Department");
   const [priority, setPriority] = useState("medium");
   const [assignedTo, setAssignedTo] = useState("");
   const [assignedToSecondary, setAssignedToSecondary] = useState("");
@@ -19,19 +23,35 @@ function CreateTask() {
   const [filePreview, setFilePreview] = useState(null);
   
   const [users, setUsers] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get("users/");
-        setUsers(res.data);
+        const [usersRes, deptsRes] = await Promise.all([
+          api.get("users/"),
+          api.get("departments/").catch(() => ({ data: [] }))
+        ]);
+        setUsers(usersRes.data);
+        if (deptsRes.data && deptsRes.data.length > 0) {
+          setDepartments(deptsRes.data);
+        } else {
+          setDepartments([
+            { id: 1, name: "IT Department" },
+            { id: 2, name: "Sales" },
+            { id: 3, name: "HR & Operations" },
+            { id: 4, name: "Finance" },
+            { id: 5, name: "Customer Support" },
+            { id: 6, name: "Marketing & Design" },
+          ]);
+        }
       } catch (err) {
-        console.error("Fetch users error:", err);
+        console.error("Fetch data error:", err);
       }
     };
-    fetchUsers();
+    fetchData();
   }, []);
 
   const handleFileChange = (e) => {
@@ -83,7 +103,7 @@ function CreateTask() {
         },
       });
 
-      setSuccessMsg("Task created successfully with dual staff assignment!");
+      setSuccessMsg(`Task created & sent to '${department}'!`);
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
@@ -109,7 +129,7 @@ function CreateTask() {
               <button className="btn btn-secondary btn-sm" onClick={() => navigate(-1)}>
                 <FaArrowLeft /> Back
               </button>
-              <h2><FaPlusCircle className="header-icon" /> Create New Ticket / Task</h2>
+              <h2><FaPlusCircle className="header-icon" /> Create & Assign New Task / Ticket</h2>
             </div>
 
             {successMsg && (
@@ -133,7 +153,7 @@ function CreateTask() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Description</label>
+                <label className="form-label">Description & Instructions</label>
                 <textarea
                   className="form-textarea"
                   rows="4"
@@ -145,7 +165,7 @@ function CreateTask() {
 
               {/* File / Image Attachment Section */}
               <div className="form-group">
-                <label className="form-label"><FaPaperclip /> Attach Files or Images</label>
+                <label className="form-label"><FaPaperclip /> Attach Files or Screenshots</label>
                 
                 <div className="file-upload-dropzone">
                   <input
@@ -159,8 +179,8 @@ function CreateTask() {
                     <label htmlFor="task-file-input" className="dropzone-label">
                       <FaPaperclip className="dropzone-icon" />
                       <div>
-                        <strong>Click to select a file or image</strong>
-                        <span>Supports PNG, JPG, PDF, DOCX, ZIP, log files, etc.</span>
+                        <strong>Click to attach file or screenshot</strong>
+                        <span>Supports PNG, JPG, PDF, DOCX, ZIP, logs, etc.</span>
                       </div>
                     </label>
                   ) : (
@@ -192,17 +212,16 @@ function CreateTask() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Department</label>
+                <label className="form-label"><FaBuilding /> Target Department *</label>
                 <select
                   className="form-select"
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
                 >
-                  <option value="IT Department">IT Department</option>
-                  <option value="Executive Management">Executive Management</option>
-                  <option value="HR & Operations">HR & Operations</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Marketing & Design">Marketing & Design</option>
+                  {isSuperAdmin && <option value="All Departments">🌐 All Departments (Global Task)</option>}
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.name}>{d.name}</option>
+                  ))}
                 </select>
               </div>
 

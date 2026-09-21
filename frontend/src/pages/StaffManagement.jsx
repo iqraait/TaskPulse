@@ -20,14 +20,17 @@ import {
   FaSquare,
   FaCheckDouble,
   FaTasks,
-  FaExclamationTriangle
+  FaPlus,
+  FaPlusCircle
 } from "react-icons/fa";
 import "./StaffManagement.css";
 
 function StaffManagement() {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showDeptModal, setShowDeptModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const role = user?.role || (user?.is_superuser ? 'superadmin' : 'staff');
@@ -37,9 +40,14 @@ function StaffManagement() {
   const [newUsername, setNewUsername] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [newRole, setNewRole] = useState("staff");
+  const [newRole, setNewRole] = useState(role === 'superadmin' ? 'dept_admin' : 'staff');
   const [newDepartment, setNewDepartment] = useState(userDept);
   
+  // Department Creation State
+  const [deptName, setDeptName] = useState("");
+  const [deptDesc, setDeptDesc] = useState("");
+  const [creatingDept, setCreatingDept] = useState(false);
+
   // Staff Privileges Checklist State
   const [privileges, setPrivileges] = useState({
     can_create_tasks: true,
@@ -52,28 +60,44 @@ function StaffManagement() {
 
   const [creating, setCreating] = useState(false);
 
-  const canManageUsers = role === 'superadmin' || role === 'admin';
+  const isSuperAdmin = role === 'superadmin';
+  const canManageUsers = isSuperAdmin || role === 'dept_admin' || role === 'admin';
 
-  const fetchUsers = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get("users/");
-      setUsers(res.data);
+      const [usersRes, deptsRes] = await Promise.all([
+        api.get("users/"),
+        api.get("departments/").catch(() => ({ data: [] }))
+      ]);
+      setUsers(usersRes.data);
+
+      if (deptsRes.data && deptsRes.data.length > 0) {
+        setDepartments(deptsRes.data);
+      } else {
+        setDepartments([
+          { id: 1, name: "IT Department" },
+          { id: 2, name: "Sales" },
+          { id: 3, name: "HR & Operations" },
+          { id: 4, name: "Finance" },
+          { id: 5, name: "Customer Support" },
+          { id: 6, name: "Marketing & Design" },
+        ]);
+      }
     } catch (err) {
-      console.error("Fetch users error:", err);
+      console.error("Fetch data error:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchData();
+  }, [fetchData]);
 
-  // Auto grant ALL privileges if Role is set to Admin / Superadmin
   const handleRoleChange = (selectedRole) => {
     setNewRole(selectedRole);
-    if (selectedRole === 'admin' || selectedRole === 'superadmin') {
+    if (selectedRole === 'dept_admin' || selectedRole === 'admin' || selectedRole === 'superadmin') {
       setPrivileges({
         can_create_tasks: true,
         can_edit_status: true,
@@ -109,6 +133,30 @@ function StaffManagement() {
     });
   };
 
+  const handleCreateDepartment = async (e) => {
+    e.preventDefault();
+    if (!deptName.trim()) return;
+
+    try {
+      setCreatingDept(true);
+      const res = await api.post("departments/", {
+        name: deptName.trim(),
+        description: deptDesc.trim()
+      });
+      setDepartments(prev => [...prev, res.data]);
+      setNewDepartment(res.data.name);
+      setDeptName("");
+      setDeptDesc("");
+      setShowDeptModal(false);
+      alert(`Department '${res.data.name}' created successfully!`);
+    } catch (err) {
+      console.error("Create department error:", err);
+      alert("Failed to create department.");
+    } finally {
+      setCreatingDept(false);
+    }
+  };
+
   const handleCreateUser = async (e) => {
     e.preventDefault();
     if (!newUsername || !newPassword) {
@@ -118,11 +166,10 @@ function StaffManagement() {
 
     try {
       setCreating(true);
-      const targetRole = newRole;
-      const targetDept = role === 'admin' ? userDept : newDepartment;
+      const targetRole = isSuperAdmin ? newRole : 'staff';
+      const targetDept = isSuperAdmin ? (newDepartment || 'IT Department') : userDept;
 
-      // If Admin role selected, ensure ALL privileges are granted automatically
-      const finalPrivileges = (targetRole === 'admin' || targetRole === 'superadmin') ? {
+      const finalPrivileges = (targetRole === 'dept_admin' || targetRole === 'admin' || targetRole === 'superadmin') ? {
         can_create_tasks: true,
         can_edit_status: true,
         can_assign_tasks: true,
@@ -141,25 +188,30 @@ function StaffManagement() {
         is_superuser: targetRole === "superadmin"
       });
 
-      alert(`User '${newUsername}' created successfully as ${targetRole.toUpperCase()} with ${targetRole === 'admin' ? 'Full Admin Access' : 'Custom Privileges'}!`);
+      alert(`User '${newUsername}' created successfully as ${targetRole.toUpperCase()} under '${targetDept}'!`);
       setShowModal(false);
       setNewUsername("");
       setNewEmail("");
       setNewPassword("");
-      fetchUsers();
+      fetchData();
     } catch (err) {
       console.error("Create user error:", err);
-      alert(err.response?.data?.username ? err.response.data.username[0] : "Failed to create user.");
+      alert(err.response?.data?.username ? err.response.data.username[0] : (err.response?.data?.error || "Failed to create user."));
     } finally {
       setCreating(false);
     }
   };
 
-  const handleDeleteUser = async (userId, username) => {
-    if (window.confirm(`Are you sure you want to delete user '${username}'?`)) {
+  const handleDeleteUser = async (u) => {
+    if (u.role === 'superadmin' || u.is_superuser) {
+      alert("🔒 SUPER ADMIN PROTECTED:\n\nSuper Admin accounts are protected and cannot be deleted.");
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to delete staff member '${u.username}'?`)) {
       try {
-        await api.delete(`users/${userId}/`);
-        fetchUsers();
+        await api.delete(`users/${u.id}/`);
+        fetchData();
       } catch (err) {
         console.error("Delete user error:", err);
         const errorMsg = err.response?.data?.error || "Failed to delete user.";
@@ -171,10 +223,10 @@ function StaffManagement() {
   const getRoleBadge = (uRole, isSuper) => {
     if (uRole === 'superadmin' || isSuper) {
       return <span className="badge badge-superadmin"><FaCrown /> Super Admin</span>;
-    } else if (uRole === 'admin') {
-      return <span className="badge badge-admin"><FaUserShield /> Department Admin</span>;
+    } else if (uRole === 'dept_admin' || uRole === 'admin') {
+      return <span className="badge badge-admin"><FaUserShield /> Department Head</span>;
     }
-    return <span className="badge badge-staff"><FaUser /> Staff</span>;
+    return <span className="badge badge-staff"><FaUser /> Staff Member</span>;
   };
 
   return (
@@ -187,19 +239,27 @@ function StaffManagement() {
         <div className="page-container">
           <div className="staff-header glass-card">
             <div className="header-info">
-              <h2><FaUsers className="header-icon" /> Staff & Role Privilege Management</h2>
+              <h2><FaUsers className="header-icon" /> Staff & Department Management</h2>
               <p>
-                {role === 'superadmin'
-                  ? "Super Admin Hub — Create Department Admins (Full Features) & Staff (Custom Privileges)"
-                  : `Department Admin Hub — Manage Staff & Admins for (${userDept})`}
+                {isSuperAdmin
+                  ? "Super Admin Hub — Create Departments, Department Heads & Staff across all departments"
+                  : `Department Head Hub — Manage Staff members for (${userDept})`}
               </p>
             </div>
 
-            {canManageUsers && (
-              <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                <FaUserPlus /> Create Admin or Staff Member
-              </button>
-            )}
+            <div className="header-action-btns">
+              {isSuperAdmin && (
+                <button className="btn btn-secondary" onClick={() => setShowDeptModal(true)}>
+                  <FaBuilding /> Add Department
+                </button>
+              )}
+
+              {canManageUsers && (
+                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                  <FaUserPlus /> {isSuperAdmin ? "Create User / Head" : "Add Staff Member"}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* User Cards Grid */}
@@ -207,81 +267,133 @@ function StaffManagement() {
             <div className="board-loading">Loading team members...</div>
           ) : (
             <div className="users-grid">
-              {users.map((u) => (
-                <div key={u.id} className="user-card glass-card interactive">
-                  <div className="card-top">
-                    <div className="user-avatar-large">
-                      {u.username ? u.username.substring(0, 2).toUpperCase() : "U"}
-                    </div>
-                    <div className="user-card-title">
-                      <h4>{u.username}</h4>
-                      <p><FaEnvelope /> {u.email || "No email set"}</p>
-                    </div>
-                  </div>
-
-                  <div className="card-mid">
-                    <div className="user-meta-row">
-                      <span className="meta-label">Role:</span>
-                      {getRoleBadge(u.role, u.is_superuser)}
-                    </div>
-                    <div className="user-meta-row">
-                      <span className="meta-label">Department:</span>
-                      <span className="dept-pill"><FaBuilding /> {u.department || "General"}</span>
-                    </div>
-
-                    {/* Active Assigned Tasks Workload Pill */}
-                    <div className="user-meta-row">
-                      <span className="meta-label">Active Workload:</span>
-                      <span className={`badge ${u.pending_tasks_count > 3 ? 'badge-priority-high' : 'badge-priority-medium'}`}>
-                        <FaTasks /> {u.pending_tasks_count || 0} Active Task(s)
-                      </span>
-                    </div>
-
-                    {/* Display Staff Privileges */}
-                    <div className="privileges-box-card">
-                      <span className="privileges-title"><FaKey /> Granted Features & Access:</span>
-                      <div className="privilege-tags">
-                        {u.role === 'admin' || u.role === 'superadmin' ? (
-                          <span className="priv-tag full-admin-tag">FULL ADMIN FEATURES & PERMISSIONS</span>
-                        ) : (
-                          <>
-                            {u.privileges?.can_create_tasks && <span className="priv-tag">Create Tasks</span>}
-                            {u.privileges?.can_edit_status && <span className="priv-tag">Edit Status</span>}
-                            {u.privileges?.can_assign_tasks && <span className="priv-tag">Reassign Tasks</span>}
-                            {u.privileges?.can_delete_tasks && <span className="priv-tag">Delete Tasks</span>}
-                            {u.privileges?.can_view_reports && <span className="priv-tag">Reports</span>}
-                            {u.privileges?.can_chat && <span className="priv-tag">Team Chat</span>}
-                            {(!u.privileges || Object.keys(u.privileges).length === 0) && (
-                              <span className="priv-tag standard">Standard Staff Access</span>
-                            )}
-                          </>
-                        )}
+              {users.map((u) => {
+                const uIsSuper = u.role === 'superadmin' || u.is_superuser;
+                return (
+                  <div key={u.id} className="user-card glass-card interactive">
+                    <div className="card-top">
+                      <div className={`user-avatar-large ${uIsSuper ? 'super-avatar' : ''}`}>
+                        {u.username ? u.username.substring(0, 2).toUpperCase() : "U"}
+                      </div>
+                      <div className="user-card-title">
+                        <h4>{u.username} {uIsSuper && <FaCrown className="crown-mini-icon" title="Super Admin" />}</h4>
+                        <p><FaEnvelope /> {u.email || "No email set"}</p>
                       </div>
                     </div>
-                  </div>
 
-                  {canManageUsers && user?.id !== u.id && (
-                    <div className="card-actions">
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleDeleteUser(u.id, u.username)}
-                        title={u.pending_tasks_count > 0 ? "Cannot delete staff with active tasks" : "Remove User"}
-                      >
-                        <FaTrash /> Remove User
-                      </button>
+                    <div className="card-mid">
+                      <div className="user-meta-row">
+                        <span className="meta-label">Role:</span>
+                        {getRoleBadge(u.role, u.is_superuser)}
+                      </div>
+                      <div className="user-meta-row">
+                        <span className="meta-label">Department:</span>
+                        <span className="dept-pill"><FaBuilding /> {u.department || "General"}</span>
+                      </div>
+
+                      <div className="user-meta-row">
+                        <span className="meta-label">Active Workload:</span>
+                        <span className={`badge ${u.pending_tasks_count > 3 ? 'badge-priority-high' : 'badge-priority-medium'}`}>
+                          <FaTasks /> {u.pending_tasks_count || 0} Active Task(s)
+                        </span>
+                      </div>
+
+                      {/* Display Staff Privileges */}
+                      <div className="privileges-box-card">
+                        <span className="privileges-title"><FaKey /> Granted Access:</span>
+                        <div className="privilege-tags">
+                          {uIsSuper ? (
+                            <span className="priv-tag super-admin-tag">GLOBAL SYSTEM SUPER ADMIN</span>
+                          ) : u.role === 'dept_admin' || u.role === 'admin' ? (
+                            <span className="priv-tag full-admin-tag">DEPARTMENT HEAD ACCESS</span>
+                          ) : (
+                            <>
+                              {u.privileges?.can_create_tasks && <span className="priv-tag">Create Tasks</span>}
+                              {u.privileges?.can_edit_status && <span className="priv-tag">Edit Status</span>}
+                              {u.privileges?.can_assign_tasks && <span className="priv-tag">Reassign Tasks</span>}
+                              {u.privileges?.can_delete_tasks && <span className="priv-tag">Delete Tasks</span>}
+                              {u.privileges?.can_view_reports && <span className="priv-tag">Reports</span>}
+                              {u.privileges?.can_chat && <span className="priv-tag">Team Chat</span>}
+                              {(!u.privileges || Object.keys(u.privileges).length === 0) && (
+                                <span className="priv-tag standard">Standard Staff Access</span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {canManageUsers && user?.id !== u.id && (
+                      <div className="card-actions">
+                        <button
+                          className={`btn btn-danger btn-sm ${uIsSuper ? 'btn-disabled-protected' : ''}`}
+                          onClick={() => handleDeleteUser(u)}
+                          disabled={uIsSuper && !isSuperAdmin}
+                          title={uIsSuper ? "Super Admin accounts are protected" : "Remove User"}
+                        >
+                          <FaTrash /> {uIsSuper ? "Protected Admin" : "Remove User"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          {/* Create User Modal with Role Selection (Admin vs Staff) */}
+          {/* Add Department Modal */}
+          {showDeptModal && (
+            <div className="modal-overlay" onClick={() => setShowDeptModal(false)}>
+              <div className="modal-content modal-medium" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h3><FaBuilding /> Add New Department</h3>
+                  <button className="icon-btn" onClick={() => setShowDeptModal(false)}>
+                    <FaTimes />
+                  </button>
+                </div>
+                <form onSubmit={handleCreateDepartment}>
+                  <div className="modal-body">
+                    <div className="form-group">
+                      <label className="form-label">Department Name *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g., Logistics, Operations, Design"
+                        value={deptName}
+                        onChange={(e) => setDeptName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Description (Optional)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Brief overview of department scope"
+                        value={deptDesc}
+                        onChange={(e) => setDeptDesc(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setShowDeptModal(false)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary" disabled={creatingDept}>
+                      {creatingDept ? "Saving..." : "Create Department"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Create User Modal */}
           {showModal && (
             <div className="modal-overlay" onClick={() => setShowModal(false)}>
               <div className="modal-content modal-large-privileges" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                  <h3><FaUserPlus /> Create Admin or Staff Account</h3>
+                  <h3><FaUserPlus /> {isSuperAdmin ? "Create User / Department Head" : `Add Staff Member (${userDept})`}</h3>
                   <button className="icon-btn" onClick={() => setShowModal(false)}>
                     <FaTimes />
                   </button>
@@ -325,33 +437,35 @@ function StaffManagement() {
                         />
                       </div>
 
-                      {/* Select Account Role: Admin vs Staff */}
+                      {/* Select Account Role */}
                       <div className="form-group">
                         <label className="form-label"><FaShieldAlt /> Account Role Type *</label>
-                        <select
-                          className="form-select role-select-highlight"
-                          value={newRole}
-                          onChange={(e) => handleRoleChange(e.target.value)}
-                        >
-                          <option value="staff">Staff Member (Custom Privileges Access)</option>
-                          <option value="admin">Department Admin / Manager (Full Features Access)</option>
-                          {role === 'superadmin' && <option value="superadmin">Super Admin (Global System Access)</option>}
-                        </select>
+                        {isSuperAdmin ? (
+                          <select
+                            className="form-select role-select-highlight"
+                            value={newRole}
+                            onChange={(e) => handleRoleChange(e.target.value)}
+                          >
+                            <option value="dept_admin">Department Head / Manager</option>
+                            <option value="staff">Staff Member</option>
+                            <option value="superadmin">Super Admin (Global System Access)</option>
+                          </select>
+                        ) : (
+                          <input className="form-input" value="Staff Member (Locked to Department)" disabled />
+                        )}
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label">Department</label>
-                        {role === 'superadmin' ? (
+                        <label className="form-label">Department *</label>
+                        {isSuperAdmin ? (
                           <select
                             className="form-select"
                             value={newDepartment}
                             onChange={(e) => setNewDepartment(e.target.value)}
                           >
-                            <option value="IT Department">IT Department</option>
-                            <option value="HR & Operations">HR & Operations</option>
-                            <option value="Finance">Finance</option>
-                            <option value="Marketing & Design">Marketing & Design</option>
-                            <option value="Executive Management">Executive Management</option>
+                            {departments.map((d) => (
+                              <option key={d.id} value={d.name}>{d.name}</option>
+                            ))}
                           </select>
                         ) : (
                           <input className="form-input" value={userDept} disabled />
@@ -359,25 +473,25 @@ function StaffManagement() {
                       </div>
                     </div>
 
-                    {/* Privileges Configuration Panel */}
+                    {/* Privileges Panel */}
                     <div className="modal-right-privileges">
                       <div className="privileges-header-row">
                         <div>
                           <h4 className="privileges-checklist-title"><FaKey /> Granted Features & Access</h4>
                           <p className="privileges-desc">
-                            {newRole === 'admin' || newRole === 'superadmin'
-                              ? "⚡ ADMIN ROLE: Gets ALL system features and management permissions automatically!"
+                            {newRole === 'dept_admin' || newRole === 'superadmin'
+                              ? "⚡ HEAD / SUPER ADMIN ROLE: Gets FULL department & task management features automatically!"
                               : "⚙️ STAFF ROLE: Configure specific access permissions for this staff member:"}
                           </p>
                         </div>
                       </div>
 
-                      {newRole === 'admin' || newRole === 'superadmin' ? (
+                      {newRole === 'dept_admin' || newRole === 'superadmin' ? (
                         <div className="admin-full-access-box">
                           <FaCrown className="admin-crown-icon" />
                           <div>
-                            <strong>Full Admin Privileges Unlocked</strong>
-                            <p>Department Admins get full management access to create tasks, reassign staff, view reports, delete tickets, and manage team chat.</p>
+                            <strong>Full Department Management Unlocked</strong>
+                            <p>Department Heads can create staff under their department, assign tasks, view department analytics, and manage team communication.</p>
                           </div>
                         </div>
                       ) : (
@@ -451,7 +565,7 @@ function StaffManagement() {
                       Cancel
                     </button>
                     <button type="submit" className="btn btn-primary" disabled={creating}>
-                      {creating ? "Creating Account..." : `Create ${newRole.toUpperCase()} Account`}
+                      {creating ? "Creating Account..." : `Create Account`}
                     </button>
                   </div>
                 </form>

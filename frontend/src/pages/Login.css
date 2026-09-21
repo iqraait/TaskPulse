@@ -1010,67 +1010,52 @@
 /* ==========================================================================
    RESPONSIVE DESIGN (MOBILE & TABLET OPTIMIZATIONS)
    ========================================================================== */
-@media (max-width: 960px) {
+@media (max-width: 768px) {
   .sh-login-wrapper {
     height: auto;
     min-height: 100vh;
-    max-height: none;
-    overflow-y: auto;
     padding: 16px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Hide left pane on mobile so only the clean login card is shown */
+  .sh-left-pane {
+    display: none !important;
   }
 
   .sh-login-card {
-    grid-template-columns: 1fr;
-    max-width: 460px;
-    max-height: none;
-    height: auto;
-    border-radius: 18px;
-  }
-
-  .sh-left-pane {
-    padding: 24px 20px;
-    min-height: 220px;
-  }
-
-  .sh-hero-headline {
-    font-size: 1.5rem;
-  }
-
-  .sh-features-list,
-  .sh-quote-box,
-  .sh-watermark-bottom-script {
-    display: none;
-  }
-
-  .sh-hero-subtext {
-    margin-bottom: 0;
+    grid-template-columns: 1fr !important;
+    max-width: 420px;
+    margin: auto;
+    border-radius: 20px;
+    box-shadow: 
+      0 20px 50px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.12);
   }
 
   .sh-right-pane {
-    padding: 24px 20px;
+    padding: 28px 22px;
     overflow-y: visible;
   }
 
   .sh-welcome-title {
-    font-size: 1.6rem;
+    font-size: 1.65rem;
   }
 }
 
 @media (max-width: 480px) {
   .sh-login-wrapper {
-    padding: 8px;
+    padding: 12px 8px;
   }
 
   .sh-login-card {
-    border-radius: 14px;
-  }
-
-  .sh-left-pane {
-    padding: 18px 16px;
+    border-radius: 18px;
   }
 
   .sh-right-pane {
-    padding: 18px 16px;
+    padding: 22px 18px;
   }
 
   .sh-input-field {
@@ -1078,7 +1063,7 @@
   }
 
   .sh-social-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .sh-modal-card {

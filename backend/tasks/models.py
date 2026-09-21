@@ -145,6 +145,7 @@ class TodoItem(models.Model):
     description = models.TextField(blank=True, default="")
     is_completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
+    completion_note = models.TextField(blank=True, default="")
     points_value = models.IntegerField(default=15)
 
     shared_from = models.ForeignKey(

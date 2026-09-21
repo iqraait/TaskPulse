@@ -64,7 +64,7 @@ class TodoItemSerializer(serializers.ModelSerializer):
         model = TodoItem
         fields = [
             'id', 'user', 'title', 'description', 'is_completed',
-            'completed_at', 'points_value', 'shared_from', 'shared_from_username',
+            'completed_at', 'completion_note', 'points_value', 'shared_from', 'shared_from_username',
             'due_date', 'created_at'
         ]
         read_only_fields = ['user', 'completed_at', 'created_at']
