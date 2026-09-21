@@ -219,3 +219,72 @@
 .mobile-drawer-footer {
   padding-top: 12px;
 }
+
+/* Mobile Notification Badge & Drawer Shortcut */
+.mobile-notif-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-notif-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 9999px;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5);
+  line-height: 1;
+}
+
+.mobile-drawer-notif-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(99, 102, 241, 0.1));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin-top: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-drawer-notif-banner:hover {
+  background: rgba(37, 99, 235, 0.3);
+  border-color: #3b82f6;
+}
+
+.drawer-notif-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f8fafc;
+  font-size: 0.825rem;
+  font-weight: 700;
+}
+
+.drawer-bell-icon {
+  font-size: 1.1rem;
+  color: #60a5fa;
+}
+
+.drawer-notif-pill {
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.drawer-notif-pill.quiet {
+  background: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+

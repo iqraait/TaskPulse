@@ -209,10 +209,14 @@
 }
 
 @media (max-width: 768px) {
+  .task-list-header {
+    padding: 16px;
+  }
   .list-filters-wrapper {
     width: 100%;
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
   .search-box {
     width: 100%;
@@ -220,8 +224,29 @@
   .filter-select {
     width: 100% !important;
   }
-  .task-table th, .task-table td {
-    padding: 12px 10px;
-    font-size: 0.8rem;
+  .task-table-container {
+    padding: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .task-table th {
+    padding: 10px 8px;
+    font-size: 0.725rem;
+    white-space: nowrap;
+  }
+  .task-table td {
+    padding: 12px 8px;
+    font-size: 0.775rem;
+  }
+  .title-text {
+    font-size: 0.825rem;
+  }
+  .assignee-pill, .date-pill {
+    font-size: 0.725rem;
+  }
+  .btn-sm {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    white-space: nowrap;
   }
 }

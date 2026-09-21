@@ -189,3 +189,38 @@ class TodoShareRequest(models.Model):
 
     def __str__(self):
         return f"TodoShare from {self.sender.username} to {self.recipient.username}: {self.title}"
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('todo_created', 'Todo Created 📝'),
+        ('todo_shared', 'Todo Shared 🤝'),
+        ('todo_accepted', 'Todo Accepted ✅'),
+        ('todo_rejected', 'Todo Rejected ❌'),
+        ('task_created', 'Ticket Created 🎫'),
+        ('task_assigned', 'Ticket Assigned 📌'),
+        ('task_updated', 'Ticket Updated 🔄'),
+        ('task_status', 'Status Changed ⚡'),
+        ('comment_added', 'Comment Added 💬'),
+        ('chat_message', 'Team Chat Message 💬'),
+        ('system', 'System Alert 🔔'),
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications"
+    )
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, default='system')
+    target_id = models.IntegerField(null=True, blank=True)
+    link = models.CharField(max_length=255, blank=True, default='')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.notification_type}] {self.user.username}: {self.title}"

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
 import { 
   FaColumns, 
   FaCheckSquare, 
@@ -15,9 +16,11 @@ import {
   FaSignOutAlt,
   FaCrown,
   FaUserShield,
-  FaUser
+  FaUser,
+  FaBell
 } from "react-icons/fa";
 import QuickCreateTodoModal from "./QuickCreateTodoModal";
+import NotificationDrawer from "./NotificationDrawer";
 import "./MobileBottomNav.css";
 
 function MobileBottomNav() {
@@ -26,8 +29,27 @@ function MobileBottomNav() {
   const { user, logout } = useAuth();
   const [showDrawer, setShowDrawer] = useState(false);
   const [showQuickTodo, setShowQuickTodo] = useState(false);
+  const [showNotifDrawer, setShowNotifDrawer] = useState(false);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
   const role = user?.role || (user?.is_superuser ? 'superadmin' : 'staff');
+
+  useEffect(() => {
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 12000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await api.get("notifications/unread_count/");
+      if (res.data && typeof res.data.unread_count === "number") {
+        setUnreadNotifCount(res.data.unread_count);
+      }
+    } catch (err) {
+      console.error("Error fetching unread notif count:", err);
+    }
+  };
 
   const handleLogout = () => {
     setShowDrawer(false);
@@ -74,13 +96,20 @@ function MobileBottomNav() {
           <FaPlus />
         </button>
 
-        <Link 
-          to="/leaderboard" 
-          className={`mobile-nav-tab ${location.pathname === "/leaderboard" ? "active" : ""}`}
+        {/* Mobile Notification Bell Tab */}
+        <button 
+          className="mobile-nav-tab mobile-notif-tab"
+          onClick={() => setShowNotifDrawer(true)}
+          title="Notifications"
         >
-          <FaTrophy className="tab-icon" />
-          <span className="tab-label">Rewards</span>
-        </Link>
+          <div className="mobile-notif-icon-wrap">
+            <FaBell className="tab-icon" />
+            {unreadNotifCount > 0 && (
+              <span className="mobile-notif-badge">{unreadNotifCount > 99 ? "99+" : unreadNotifCount}</span>
+            )}
+          </div>
+          <span className="tab-label">Alerts</span>
+        </button>
 
         <button 
           className={`mobile-nav-tab ${showDrawer ? "active" : ""}`}
@@ -112,6 +141,19 @@ function MobileBottomNav() {
               <button className="drawer-close-btn" onClick={() => setShowDrawer(false)}>
                 <FaTimes />
               </button>
+            </div>
+
+            {/* Notifications Shortcut Bar in Drawer */}
+            <div className="mobile-drawer-notif-banner" onClick={() => { setShowDrawer(false); setShowNotifDrawer(true); }}>
+              <div className="drawer-notif-left">
+                <FaBell className="drawer-bell-icon" />
+                <span>Notifications & Mobile Push Alerts</span>
+              </div>
+              {unreadNotifCount > 0 ? (
+                <span className="drawer-notif-pill">{unreadNotifCount} New</span>
+              ) : (
+                <span className="drawer-notif-pill quiet">View</span>
+              )}
             </div>
 
             {/* Navigation List */}
@@ -163,6 +205,13 @@ function MobileBottomNav() {
       <QuickCreateTodoModal 
         isOpen={showQuickTodo}
         onClose={() => setShowQuickTodo(false)}
+      />
+
+      {/* Notification Drawer */}
+      <NotificationDrawer 
+        isOpen={showNotifDrawer}
+        onClose={() => setShowNotifDrawer(false)}
+        onNotificationRead={fetchUnreadCount}
       />
     </>
   );

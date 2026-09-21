@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Task, Comment, TaskFlowLog, TodoItem, TodoShareRequest
+from .models import Task, Comment, TaskFlowLog, TodoItem, TodoShareRequest, Notification
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -85,3 +85,16 @@ class TodoShareRequestSerializer(serializers.ModelSerializer):
             'target_date', 'created_at'
         ]
         read_only_fields = ['sender', 'created_at']
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = [
+            'id', 'user', 'username', 'title', 'message',
+            'notification_type', 'target_id', 'link',
+            'is_read', 'created_at'
+        ]
+        read_only_fields = ['user', 'created_at']

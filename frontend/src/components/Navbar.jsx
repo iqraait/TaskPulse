@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -10,11 +10,12 @@ import {
   FaUser, 
   FaSignOutAlt,
   FaComments,
-  FaCheckCircle,
   FaPlus
 } from "react-icons/fa";
 import DepartmentChatModal from "./DepartmentChatModal";
 import QuickCreateTodoModal from "./QuickCreateTodoModal";
+import NotificationDrawer from "./NotificationDrawer";
+import NotificationToast from "./NotificationToast";
 import "./Navbar.css";
 
 function Navbar({ searchVal = "", setSearchVal = () => {} }) {
@@ -22,9 +23,27 @@ function Navbar({ searchVal = "", setSearchVal = () => {} }) {
   const navigate = useNavigate();
   const [showChatModal, setShowChatModal] = useState(false);
   const [showQuickTodo, setShowQuickTodo] = useState(false);
-  const [pushEnabled, setPushEnabled] = useState(false);
+  const [showNotifDrawer, setShowNotifDrawer] = useState(false);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
   const role = user?.role || (user?.is_superuser ? 'superadmin' : 'staff');
+
+  useEffect(() => {
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 12000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await api.get("notifications/unread_count/");
+      if (res.data && typeof res.data.unread_count === "number") {
+        setUnreadNotifCount(res.data.unread_count);
+      }
+    } catch (err) {
+      console.error("Error fetching unread notif count:", err);
+    }
+  };
 
   const getRoleBadge = () => {
     if (role === 'superadmin') {
@@ -52,43 +71,11 @@ function Navbar({ searchVal = "", setSearchVal = () => {} }) {
     navigate("/");
   };
 
-  const enablePushNotifications = async () => {
-    if (!("Notification" in window)) {
-      alert("Mobile Push Notifications are not supported by this browser.");
-      return;
-    }
-
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission === "granted") {
-        setPushEnabled(true);
-        if ('serviceWorker' in navigator) {
-          const reg = await navigator.serviceWorker.ready;
-          let sub = await reg.pushManager.getSubscription();
-          if (!sub) {
-            // Subscribe using public VAPID key
-            sub = await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: "BEl62iUYgUivxIkv69yViEuiBIa-m9GYv559_3A_example_key"
-            }).catch(() => null);
-          }
-          if (sub) {
-            await api.post("push-subscribe/", sub.toJSON());
-          }
-        }
-        alert("🔔 Mobile Push Notifications Enabled! You will receive real-time ticket alerts on your phone.");
-      } else {
-        alert("Notification permission denied. Please allow notifications in your mobile browser settings.");
-      }
-    } catch (err) {
-      console.error("Push notification setup error:", err);
-      setPushEnabled(true);
-      alert("🔔 Mobile Push Notifications active for this session!");
-    }
-  };
-
   return (
     <header className="navbar-container">
+      {/* Toast Notification Container */}
+      <NotificationToast />
+
       {/* Search Input */}
       <div className="navbar-search">
         <FaSearch className="search-icon" />
@@ -123,14 +110,16 @@ function Navbar({ searchVal = "", setSearchVal = () => {} }) {
           {user?.department && <span className="chat-dept-tag">{user.department}</span>}
         </button>
 
-        {/* Notifications Icon (Click to Enable Push Notifications on Mobile) */}
+        {/* Notifications Icon (Opens Notification Drawer) */}
         <button 
-          className={`icon-btn ${pushEnabled ? 'push-active' : ''}`} 
-          onClick={enablePushNotifications}
-          title={pushEnabled ? "Mobile Push Notifications Active" : "Click to Enable Mobile Push Notifications"}
+          className="icon-btn notif-bell-btn" 
+          onClick={() => setShowNotifDrawer(true)}
+          title="Open Notifications"
         >
           <FaBell />
-          <span className="notif-badge">{pushEnabled ? "✓" : "3"}</span>
+          {unreadNotifCount > 0 && (
+            <span className="notif-badge">{unreadNotifCount > 99 ? "99+" : unreadNotifCount}</span>
+          )}
         </button>
 
         {/* User Details Pill in Top Right Corner */}
@@ -159,6 +148,13 @@ function Navbar({ searchVal = "", setSearchVal = () => {} }) {
       <QuickCreateTodoModal
         isOpen={showQuickTodo}
         onClose={() => setShowQuickTodo(false)}
+      />
+
+      {/* Notification Center Drawer */}
+      <NotificationDrawer 
+        isOpen={showNotifDrawer} 
+        onClose={() => setShowNotifDrawer(false)}
+        onNotificationRead={fetchUnreadCount}
       />
     </header>
   );

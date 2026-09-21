@@ -5,7 +5,8 @@ from .views import (
     TaskViewSet, 
     CommentViewSet, 
     TodoItemViewSet, 
-    TodoShareRequestViewSet, 
+    TodoShareRequestViewSet,
+    NotificationViewSet, 
     dashboard_stats, 
     subscribe_push, 
     public_ticket_schedule,
@@ -18,6 +19,7 @@ router.register(r'tasks', TaskViewSet, basename="tasks")
 router.register(r'comments', CommentViewSet, basename="comments")
 router.register(r'todos', TodoItemViewSet, basename="todos")
 router.register(r'todo-shares', TodoShareRequestViewSet, basename="todo-shares")
+router.register(r'notifications', NotificationViewSet, basename="notifications")
 
 urlpatterns = [
     path('', include(router.urls)),

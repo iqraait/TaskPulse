@@ -5,9 +5,26 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from django.db.models import Q, Count
 from django.utils import timezone
 
-from .models import Task, Comment, TaskFlowLog, PushSubscription, TodoItem, TodoShareRequest
-from .serializers import TaskSerializer, CommentSerializer, TodoItemSerializer, TodoShareRequestSerializer
+from .models import Task, Comment, TaskFlowLog, PushSubscription, TodoItem, TodoShareRequest, Notification
+from .serializers import TaskSerializer, CommentSerializer, TodoItemSerializer, TodoShareRequestSerializer, NotificationSerializer
 from users.models import User
+
+
+def create_user_notification(user, title, message, notification_type='system', target_id=None, link=''):
+    if not user:
+        return None
+    try:
+        return Notification.objects.create(
+            user=user,
+            title=title,
+            message=message,
+            notification_type=notification_type,
+            target_id=target_id,
+            link=link
+        )
+    except Exception as e:
+        print(f"Error creating notification for {user}: {e}")
+        return None
 
 
 class TaskViewSet(ModelViewSet):
@@ -93,6 +110,35 @@ class TaskViewSet(ModelViewSet):
 
         TaskFlowLog.objects.create(task=task, actor=user, action_type="created", description=desc)
 
+        # Send Notifications for Task Creation
+        ticket_code_str = task.ticket_code or f"TK-{task.id}"
+        create_user_notification(
+            user=user,
+            title=f"Ticket Logged: [{ticket_code_str}]",
+            message=f"Ticket '{task.title}' was successfully created.",
+            notification_type="task_created",
+            target_id=task.id,
+            link="/tasks"
+        )
+        if task.assigned_to and task.assigned_to != user:
+            create_user_notification(
+                user=task.assigned_to,
+                title=f"New Ticket Assigned: [{ticket_code_str}]",
+                message=f"You have been assigned to ticket '{task.title}' by {user.username}.",
+                notification_type="task_assigned",
+                target_id=task.id,
+                link="/tasks"
+            )
+        if task.assigned_to_secondary and task.assigned_to_secondary != user and task.assigned_to_secondary != task.assigned_to:
+            create_user_notification(
+                user=task.assigned_to_secondary,
+                title=f"Secondary Assignee: [{ticket_code_str}]",
+                message=f"You were set as secondary assignee for '{task.title}' by {user.username}.",
+                notification_type="task_assigned",
+                target_id=task.id,
+                link="/tasks"
+            )
+
     def perform_update(self, serializer):
         user = self.request.user if self.request.user.is_authenticated else None
         if not user or user.is_anonymous:
@@ -104,8 +150,9 @@ class TaskViewSet(ModelViewSet):
         old_status = old_instance.status
 
         task = serializer.save()
+        ticket_code_str = task.ticket_code or f"TK-{task.id}"
 
-        # Audit Primary Assignee Reassignment
+        # Audit & Notify Primary Assignee Reassignment
         if old_assignee != task.assigned_to:
             from_name = old_assignee.username if old_assignee else "Unassigned"
             to_name = task.assigned_to.username if task.assigned_to else "Unassigned"
@@ -115,8 +162,17 @@ class TaskViewSet(ModelViewSet):
                 action_type="reassigned",
                 description=f"Primary Assignee changed from '{from_name}' ➔ '{to_name}' by {user.username}."
             )
+            if task.assigned_to and task.assigned_to != user:
+                create_user_notification(
+                    user=task.assigned_to,
+                    title=f"Ticket Reassigned: [{ticket_code_str}]",
+                    message=f"Ticket '{task.title}' was reassigned to you by {user.username}.",
+                    notification_type="task_assigned",
+                    target_id=task.id,
+                    link="/tasks"
+                )
 
-        # Audit Secondary Assignee Reassignment
+        # Audit & Notify Secondary Assignee Reassignment
         if old_secondary != task.assigned_to_secondary:
             from_sec = old_secondary.username if old_secondary else "None"
             to_sec = task.assigned_to_secondary.username if task.assigned_to_secondary else "None"
@@ -126,8 +182,17 @@ class TaskViewSet(ModelViewSet):
                 action_type="reassigned",
                 description=f"Secondary Assignee changed from '{from_sec}' ➔ '{to_sec}' by {user.username}."
             )
+            if task.assigned_to_secondary and task.assigned_to_secondary != user:
+                create_user_notification(
+                    user=task.assigned_to_secondary,
+                    title=f"Secondary Assignee Updated: [{ticket_code_str}]",
+                    message=f"You are assigned to ticket '{task.title}' as secondary assignee.",
+                    notification_type="task_assigned",
+                    target_id=task.id,
+                    link="/tasks"
+                )
 
-        # Audit Status Changes
+        # Audit & Notify Status Changes
         if old_status != task.status:
             TaskFlowLog.objects.create(
                 task=task,
@@ -135,6 +200,17 @@ class TaskViewSet(ModelViewSet):
                 action_type="status_change",
                 description=f"Status updated from '{old_status.upper()}' ➔ '{task.status.upper()}' by {user.username}."
             )
+            notify_users = set(filter(None, [task.created_by, task.assigned_to, task.assigned_to_secondary]))
+            for recipient in notify_users:
+                if recipient != user:
+                    create_user_notification(
+                        user=recipient,
+                        title=f"Status Changed: [{ticket_code_str}]",
+                        message=f"Ticket '{task.title}' status updated to '{task.status.upper()}' by {user.username}.",
+                        notification_type="task_status",
+                        target_id=task.id,
+                        link="/tasks"
+                    )
 
 
 class CommentViewSet(ModelViewSet):
@@ -146,7 +222,22 @@ class CommentViewSet(ModelViewSet):
         user = self.request.user if self.request.user.is_authenticated else None
         if not user or user.is_anonymous:
             user = User.objects.filter(role='superadmin').first() or User.objects.first()
-        serializer.save(user=user)
+        comment = serializer.save(user=user)
+
+        # Notify task creator and assignees about new comment
+        task = comment.task
+        ticket_code_str = task.ticket_code or f"TK-{task.id}"
+        recipients = set(filter(None, [task.created_by, task.assigned_to, task.assigned_to_secondary]))
+        for recipient in recipients:
+            if recipient != user:
+                create_user_notification(
+                    user=recipient,
+                    title=f"New Comment: [{ticket_code_str}]",
+                    message=f"{user.username}: {comment.message[:70]}",
+                    notification_type="comment_added",
+                    target_id=task.id,
+                    link="/tasks"
+                )
 
 
 class TodoItemViewSet(ModelViewSet):
@@ -161,7 +252,15 @@ class TodoItemViewSet(ModelViewSet):
         return TodoItem.objects.filter(user=user).order_by("is_completed", "-created_at")
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        todo = serializer.save(user=self.request.user)
+        create_user_notification(
+            user=self.request.user,
+            title=f"Daily To-Do Created",
+            message=f"Added '{todo.title}' (+{todo.points_value} pts reward upon completion).",
+            notification_type="todo_created",
+            target_id=todo.id,
+            link="/todos"
+        )
 
     @action(detail=True, methods=['post'])
     def toggle_complete(self, request, pk=None):
@@ -215,6 +314,15 @@ class TodoItemViewSet(ModelViewSet):
                 )
                 created_shares.append(share.id)
 
+            # Send Notification to recipient
+            create_user_notification(
+                user=recipient,
+                title=f"New Shared Daily To-Do",
+                message=f"{user.username} shared {todos.count()} daily todo item(s) with you.",
+                notification_type="todo_shared",
+                link="/todos"
+            )
+
         return Response({
             'status': 'success',
             'shared_count': len(created_shares),
@@ -265,6 +373,16 @@ class TodoShareRequestViewSet(ModelViewSet):
             due_date=target_date
         )
 
+        # Notify Sender that share was accepted
+        create_user_notification(
+            user=share.sender,
+            title=f"Shared To-Do Accepted ✅",
+            message=f"{request.user.username} accepted your shared to-do '{share.title}'.",
+            notification_type="todo_accepted",
+            target_id=new_todo.id,
+            link="/todos"
+        )
+
         return Response({
             'status': 'accepted',
             'todo_id': new_todo.id,
@@ -282,11 +400,58 @@ class TodoShareRequestViewSet(ModelViewSet):
         share.status = 'rejected'
         share.rejection_reason = rejection_reason
         share.save()
+
+        # Notify Sender that share was rejected
+        create_user_notification(
+            user=share.sender,
+            title=f"Shared To-Do Declined ❌",
+            message=f"{request.user.username} declined '{share.title}'. Reason: {rejection_reason}",
+            notification_type="todo_rejected",
+            link="/todos"
+        )
+
         return Response({'status': 'rejected', 'rejection_reason': rejection_reason})
 
     @action(detail=True, methods=['post'])
     def decline(self, request, pk=None):
         return self.reject(request, pk)
+
+
+class NotificationViewSet(ModelViewSet):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or user.is_anonymous:
+            return Notification.objects.none()
+        return Notification.objects.filter(user=user).order_by("-created_at")
+
+    @action(detail=False, methods=['get'])
+    def unread_count(self, request):
+        user = request.user
+        count = Notification.objects.filter(user=user, is_read=False).count()
+        return Response({'unread_count': count})
+
+    @action(detail=False, methods=['post'])
+    def mark_all_read(self, request):
+        user = request.user
+        Notification.objects.filter(user=user, is_read=False).update(is_read=True)
+        return Response({'status': 'success', 'message': 'All notifications marked as read'})
+
+    @action(detail=True, methods=['post'])
+    def mark_read(self, request, pk=None):
+        notif = self.get_object()
+        notif.is_read = True
+        notif.save()
+        return Response({'status': 'success', 'is_read': True})
+
+    @action(detail=False, methods=['delete'])
+    def clear_all(self, request):
+        user = request.user
+        Notification.objects.filter(user=user).delete()
+        return Response({'status': 'success', 'message': 'Notifications cleared'})
+
 
 
 @api_view(['POST'])
