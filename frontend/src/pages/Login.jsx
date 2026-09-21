@@ -1,40 +1,56 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import api from "../services/api";
-import { FaLock, FaUserCircle, FaEye, FaEyeSlash, FaArrowRight, FaApple, FaGoogle, FaCalendarAlt, FaShieldAlt } from "react-icons/fa";
-import heroImg from "../assets/login_team_hero.png";
+import {
+  FaLock,
+  FaUserCircle,
+  FaEye,
+  FaEyeSlash,
+  FaArrowRight,
+  FaApple,
+  FaGoogle,
+  FaShieldAlt,
+  FaBolt,
+  FaUsers,
+  FaChartBar,
+  FaMoon,
+  FaSun,
+  FaGlobe,
+  FaChevronDown,
+  FaKey,
+  FaEnvelope,
+  FaTimes,
+  FaCheckCircle,
+  FaInfoCircle
+} from "react-icons/fa";
+import heroImg from "../assets/login_hero_team.png";
 import "./Login.css";
 
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // Form states
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [keepSignedIn, setKeepSignedIn] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Live ticket creation schedule from backend
-  const [ticketSchedule, setTicketSchedule] = useState({});
-  const [selectedDate, setSelectedDate] = useState("");
+  // UI preferences
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [language, setLanguage] = useState("EN");
+  const [showLangMenu, setShowLangMenu] = useState(false);
 
-  useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        const res = await api.get("public-schedule/");
-        setTicketSchedule(res.data);
-        const dates = Object.keys(res.data);
-        if (dates.length > 0) {
-          setSelectedDate(dates[0]);
-        }
-      } catch (err) {
-        console.error("Fetch public ticket schedule error:", err);
-      }
-    };
-    fetchSchedule();
-  }, []);
+  // Forgot password modal state
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotInput, setForgotInput] = useState("");
+  const [forgotSubmitted, setForgotSubmitted] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  // Demo credentials toast / helper visible
+  const [showDemoInfo, setShowDemoInfo] = useState(false);
 
   const handleLogin = async (e) => {
     if (e) e.preventDefault();
@@ -49,7 +65,7 @@ function Login() {
       await login(username, password);
       navigate("/dashboard");
     } catch (err) {
-      console.error(err);
+      console.error("Login error:", err);
       setErrorMsg(
         err.response?.data?.detail || "Invalid credentials. Please check your username and password."
       );
@@ -58,55 +74,241 @@ function Login() {
     }
   };
 
-  const selectedDateTickets = ticketSchedule[selectedDate] || [];
-  const primaryTicket = selectedDateTickets[0];
-  const secondaryTicket = selectedDateTickets[1];
+  const fillDemoAdmin = () => {
+    setUsername("admin");
+    setPassword("adminpassword");
+    setErrorMsg("");
+  };
 
-  const getStatusBadge = (st) => {
-    switch (st) {
-      case "pending":
-        return <span className="badge badge-priority-medium">Pending</span>;
-      case "progress":
-        return <span className="badge badge-staff">In Progress</span>;
-      case "done":
-        return <span className="badge badge-admin">Completed</span>;
-      case "closed":
-        return <span className="badge" style={{background: '#cbd5e1', color: '#334155'}}>Closed</span>;
-      default:
-        return <span className="badge">{st}</span>;
-    }
+  const handleForgotSubmit = (e) => {
+    e.preventDefault();
+    if (!forgotInput.trim()) return;
+    setForgotLoading(true);
+    setTimeout(() => {
+      setForgotLoading(false);
+      setForgotSubmitted(true);
+    }, 800);
+  };
+
+  const closeForgotModal = () => {
+    setShowForgotModal(false);
+    setForgotSubmitted(false);
+    setForgotInput("");
   };
 
   return (
-    <div className="login-attachment3-wrapper">
-      {/* Sleek Screen-Fitted Card */}
-      <div className="login-attachment3-card-big">
+    <div className={`sh-login-wrapper ${isDarkMode ? "sh-dark-mode-bg" : ""}`}>
+      {/* Background ambient lighting accents */}
+      <div className="sh-ambient-bg-glow glow-1"></div>
+      <div className="sh-ambient-bg-glow glow-2"></div>
+
+      {/* Main Screen-Fitted Card Container */}
+      <div className={`sh-login-card ${isDarkMode ? "sh-card-dark" : ""}`}>
         
-        {/* Left Form Section */}
-        <div className="login-left-pane-big">
+        {/* ================= LEFT VISUAL PANEL (SupportHub Hero) ================= */}
+        <div className="sh-left-pane">
+          {/* Background image & overlay gradient */}
+          <img src={heroImg} alt="SupportHub Team" className="sh-hero-bg-img" />
+          <div className="sh-hero-overlay"></div>
+
+          {/* Background Typography Watermarks */}
+          <div className="sh-watermark-top-right">
+            <span>Ideas</span>
+            <span>Tickets</span>
+            <span>Solutions</span>
+            <div className="sh-watermark-underline"></div>
+          </div>
+
+          <div className="sh-watermark-bottom-script">
+            Support Never Stops
+          </div>
+
+          {/* Top Brand Header */}
+          <div className="sh-brand-header">
+            <div className="sh-brand-icon-box">
+              <span className="sh-brand-letter">S</span>
+            </div>
+            <div className="sh-brand-text">
+              <h1 className="sh-brand-title">SupportHub</h1>
+              <span className="sh-brand-tagline">SUPPORT • TRACK • RESOLVE</span>
+            </div>
+          </div>
+
+          {/* Center Main Headline & Subtitle */}
+          <div className="sh-hero-content">
+            <h2 className="sh-hero-headline">
+              Great Teams Build <span className="sh-highlight-blue">Better Experiences</span>
+            </h2>
+            <p className="sh-hero-subtext">
+              Raise tickets, track progress and get things done — all in one place.
+            </p>
+
+            {/* 3 Key Feature Pills */}
+            <div className="sh-features-list">
+              <div className="sh-feature-item">
+                <div className="sh-feature-icon-pill">
+                  <FaBolt />
+                </div>
+                <div className="sh-feature-text">
+                  <strong>Quick Ticket Creation</strong>
+                  <span>Report issues in seconds</span>
+                </div>
+              </div>
+
+              <div className="sh-feature-item">
+                <div className="sh-feature-icon-pill">
+                  <FaUsers />
+                </div>
+                <div className="sh-feature-text">
+                  <strong>Team Collaboration</strong>
+                  <span>Work together, resolve faster</span>
+                </div>
+              </div>
+
+              <div className="sh-feature-item">
+                <div className="sh-feature-icon-pill">
+                  <FaChartBar />
+                </div>
+                <div className="sh-feature-text">
+                  <strong>Real-Time Tracking</strong>
+                  <span>Stay updated always</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quote Box */}
+            <div className="sh-quote-box">
+              <span className="sh-quote-mark">“</span>
+              <p className="sh-quote-text">
+                Small issues resolved today create a <span className="sh-quote-highlight">better tomorrow.</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom Tags */}
+          <div className="sh-left-footer-tags">
+            <span>PEOPLE</span>
+            <span className="sh-dot-sep">|</span>
+            <span>PROCESS</span>
+            <span className="sh-dot-sep">|</span>
+            <span>PROGRESS</span>
+          </div>
+        </div>
+
+        {/* ================= RIGHT FORM PANEL (Sign In) ================= */}
+        <div className="sh-right-pane">
           
-          {/* Top Brand Logo */}
-          <div className="brand-pill-badge-big">
-            <img src="/taskpulse-logo.svg" alt="TaskPulse Logo" className="brand-logo-img" />
-            <span className="brand-pill-name-big">TaskPulse Pro</span>
+          {/* Top Controls: Dark Mode & Language Selector */}
+          <div className="sh-top-controls">
+            {/* Quick Demo Credentials Info Toggle */}
+            <button
+              type="button"
+              className="sh-demo-hint-btn"
+              onClick={() => setShowDemoInfo(!showDemoInfo)}
+              title="Click to view login details"
+            >
+              <FaKey /> Credentials Info
+            </button>
+
+            <div className="sh-controls-right">
+              {/* Dark mode toggle */}
+              <button
+                type="button"
+                className="sh-theme-toggle-btn"
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {isDarkMode ? <FaSun className="sh-icon-sun" /> : <FaMoon className="sh-icon-moon" />}
+              </button>
+
+              {/* Language selector */}
+              <div className="sh-lang-dropdown-wrapper">
+                <button
+                  type="button"
+                  className="sh-lang-btn"
+                  onClick={() => setShowLangMenu(!showLangMenu)}
+                >
+                  <FaGlobe className="sh-lang-icon" />
+                  <span>{language}</span>
+                  <FaChevronDown className="sh-chevron-icon" />
+                </button>
+                {showLangMenu && (
+                  <div className="sh-lang-menu">
+                    {["EN", "ES", "FR", "DE", "HI"].map((lang) => (
+                      <button
+                        key={lang}
+                        type="button"
+                        className={`sh-lang-option ${language === lang ? "active" : ""}`}
+                        onClick={() => {
+                          setLanguage(lang);
+                          setShowLangMenu(false);
+                        }}
+                      >
+                        {lang === "EN" ? "English (EN)" : lang === "ES" ? "Español (ES)" : lang === "FR" ? "Français (FR)" : lang === "DE" ? "Deutsch (DE)" : "Hindi (HI)"}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="login-heading-group-big">
-            <h2>Welcome back</h2>
-            <p>Sign in to access your team command center & active tasks</p>
+          {/* Demo Info Banner (Collapsible) */}
+          {showDemoInfo && (
+            <div className="sh-demo-credentials-banner">
+              <div className="sh-demo-banner-content">
+                <FaInfoCircle className="sh-demo-icon" />
+                <div>
+                  <strong>Login Credentials:</strong>
+                  <div className="sh-cred-chips">
+                    <span className="sh-chip" onClick={fillDemoAdmin}>
+                      Admin: <code>admin</code> / <code>adminpassword</code>
+                    </span>
+                    <span className="sh-chip" onClick={() => { setUsername("superadmin"); setPassword("superadmin123"); }}>
+                      SuperAdmin: <code>superadmin</code> / <code>superadmin123</code>
+                    </span>
+                    <span className="sh-chip" onClick={() => { setUsername("staff1"); setPassword("staffpassword"); }}>
+                      Staff: <code>staff1</code> / <code>staffpassword</code>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="sh-fill-quick-btn"
+                onClick={fillDemoAdmin}
+              >
+                Auto-fill Admin
+              </button>
+            </div>
+          )}
+
+          {/* Form Header */}
+          <div className="sh-form-header">
+            <h2 className="sh-welcome-title">Welcome Back</h2>
+            <p className="sh-welcome-subtitle">
+              Sign in to access your support command center & active tasks.
+            </p>
           </div>
 
-          {errorMsg && <div className="login-error-alert">{errorMsg}</div>}
+          {/* Error Message */}
+          {errorMsg && (
+            <div className="sh-error-alert">
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
-          <form onSubmit={handleLogin} className="login-form-attachment3-big">
-            <div className="form-group-pill">
-              <label className="form-label-pill">Username</label>
-              <div className="input-pill-wrap">
-                <FaUserCircle className="pill-input-icon-big" />
+          {/* Main Sign In Form */}
+          <form onSubmit={handleLogin} className="sh-login-form">
+            {/* Username Input Group */}
+            <div className="sh-input-group">
+              <label className="sh-input-label">Username</label>
+              <div className="sh-input-wrapper">
+                <FaUserCircle className="sh-input-icon" />
                 <input
                   type="text"
-                  className="input-pill-big"
-                  placeholder="Enter username (e.g. admin)"
+                  className="sh-input-field"
+                  placeholder="Enter your username (e.g. admin)"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -114,120 +316,187 @@ function Login() {
               </div>
             </div>
 
-            <div className="form-group-pill">
-              <label className="form-label-pill">Password</label>
-              <div className="input-pill-wrap">
-                <FaLock className="pill-input-icon-big" />
+            {/* Password Input Group */}
+            <div className="sh-input-group">
+              <label className="sh-input-label">Password</label>
+              <div className="sh-input-wrapper">
+                <FaLock className="sh-input-icon" />
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="input-pill-big"
-                  placeholder="••••••••••••"
+                  className="sh-input-field sh-password-field"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
                 <button
                   type="button"
-                  className="toggle-pw-pill-big"
+                  className="sh-toggle-password-btn"
                   onClick={() => setShowPassword(!showPassword)}
+                  tabIndex="-1"
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
             </div>
 
-            <button type="submit" className="btn-submit-gold-pill-big" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In to Command Center"} <FaArrowRight />
+            {/* Options Row: Keep signed in & Forgot Password */}
+            <div className="sh-options-row">
+              <label className="sh-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={keepSignedIn}
+                  onChange={(e) => setKeepSignedIn(e.target.checked)}
+                  className="sh-checkbox"
+                />
+                <span className="sh-checkbox-custom"></span>
+                <span className="sh-checkbox-text">Keep me signed in</span>
+              </label>
+
+              <button
+                type="button"
+                className="sh-forgot-link"
+                onClick={() => setShowForgotModal(true)}
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="sh-submit-btn"
+              disabled={loading}
+            >
+              {loading ? "Signing In..." : "Sign In"} <FaArrowRight className="sh-btn-arrow" />
             </button>
           </form>
 
-          {/* Social / SSO Quick Actions */}
-          <div className="social-pill-row-big">
-            <button type="button" className="social-pill-btn-big">
-              <FaApple /> Apple ID
+          {/* Divider */}
+          <div className="sh-divider">
+            <span className="sh-divider-text">or continue with</span>
+          </div>
+
+          {/* Social Sign In Buttons */}
+          <div className="sh-social-grid">
+            <button type="button" className="sh-social-btn" onClick={fillDemoAdmin}>
+              <FaGoogle className="sh-google-icon" />
+              <span>Google</span>
             </button>
-            <button type="button" className="social-pill-btn-big">
-              <FaGoogle /> Google Workspace
+
+            <button type="button" className="sh-social-btn" onClick={fillDemoAdmin}>
+              <FaApple className="sh-apple-icon" />
+              <span>Apple</span>
             </button>
           </div>
 
-          <div className="login-footer-pill-big">
-            <span>Secured Enterprise Portal</span>
-            <span className="terms-link"><FaShieldAlt /> TLS 256-bit Encrypted</span>
+          {/* Security Alert Badge Footer */}
+          <div className="sh-security-badge-box">
+            <div className="sh-shield-icon-wrap">
+              <FaShieldAlt className="sh-shield-icon" />
+            </div>
+            <div className="sh-security-text">
+              <strong>Secure. Reliable. Always On.</strong>
+              <p>Your data is protected with enterprise-grade security.</p>
+            </div>
           </div>
-        </div>
 
-        {/* Right Hero Visual Panel with Ticket Creation Dates Calendar */}
-        <div className="login-right-pane-big">
-          <div className="hero-image-wrapper">
-            <img src={heroImg} alt="Team Command Center" className="hero-bg-img" />
-            <div className="hero-overlay-gradient"></div>
-
-            {/* Top Activity Banner */}
-            <div className="floating-widget widget-top-big">
-              <div className="widget-header-yellow">
-                <span className="widget-title">
-                  {primaryTicket ? `${primaryTicket.ticket_code}: ${primaryTicket.title}` : "System Ticket Activity Overview"}
-                </span>
-                <span className="widget-time">
-                  {primaryTicket ? `👤 ${primaryTicket.assigned_to}` : "No tickets on date"}
-                  {primaryTicket && getStatusBadge(primaryTicket.status)}
-                </span>
-              </div>
-            </div>
-
-            {/* Working Calendar Date Picker Bar */}
-            <div className="floating-widget widget-mid-calendar-big">
-              <div className="cal-header-bar">
-                <FaCalendarAlt className="cal-icon" /> Ticket Creation Dates Preview:
-              </div>
-              <div className="cal-days-grid">
-                {Object.keys(ticketSchedule).length > 0 ? (
-                  Object.keys(ticketSchedule).map((dateStr) => {
-                    const dateObj = new Date(dateStr);
-                    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                    const dayNum = dateObj.getDate();
-                    const pendingCount = ticketSchedule[dateStr].filter(t => t.status === 'pending' || t.status === 'progress').length;
-
-                    return (
-                      <button
-                        key={dateStr}
-                        type="button"
-                        className={`cal-day-btn ${selectedDate === dateStr ? "active" : ""}`}
-                        onClick={() => setSelectedDate(dateStr)}
-                        title={`View ${pendingCount} pending/active tickets created on ${dateStr}`}
-                      >
-                        <span className="day-label">{dayName}</span>
-                        <strong className="date-label">{dayNum}</strong>
-                        {pendingCount > 0 && <span className="pending-dot-badge">{pendingCount}</span>}
-                      </button>
-                    );
-                  })
-                ) : (
-                  <span className="no-dates-label">Loading ticket dates...</span>
-                )}
-              </div>
-            </div>
-
-            {/* Bottom Department Summary */}
-            <div className="floating-widget widget-bottom-meeting-big">
-              <span className="meeting-title">
-                {secondaryTicket ? `${secondaryTicket.ticket_code}: ${secondaryTicket.title}` : (primaryTicket ? `Department: ${primaryTicket.department}` : "Select a date above to preview pending tickets")}
-              </span>
-              <span className="meeting-time">
-                {secondaryTicket ? `Status: ${secondaryTicket.status.toUpperCase()} | Assigned: ${secondaryTicket.assigned_to}` : `Created Date: ${selectedDate || "Today"}`}
-              </span>
-              <div className="avatar-stack">
-                <div className="av-circle" style={{ background: "#2563eb" }}>IT</div>
-                <div className="av-circle" style={{ background: "#7e22ce" }}>HR</div>
-                <div className="av-circle" style={{ background: "#059669" }}>FIN</div>
-              </div>
-            </div>
-
-          </div>
         </div>
 
       </div>
+
+      {/* ================= FORGOT PASSWORD MODAL ================= */}
+      {showForgotModal && (
+        <div className="sh-modal-overlay" onClick={closeForgotModal}>
+          <div className="sh-modal-card" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="sh-modal-close-btn" onClick={closeForgotModal}>
+              <FaTimes />
+            </button>
+
+            {!forgotSubmitted ? (
+              <>
+                <div className="sh-modal-header">
+                  <div className="sh-modal-icon-badge">
+                    <FaKey />
+                  </div>
+                  <h3>Forgot Password?</h3>
+                  <p>
+                    Enter your registered username or email address and we'll send you password reset instructions.
+                  </p>
+                </div>
+
+                <form onSubmit={handleForgotSubmit} className="sh-modal-form">
+                  <div className="sh-input-group">
+                    <label className="sh-input-label">Username or Email</label>
+                    <div className="sh-input-wrapper">
+                      <FaEnvelope className="sh-input-icon" />
+                      <input
+                        type="text"
+                        className="sh-input-field"
+                        placeholder="e.g. admin or admin@todoteam.com"
+                        value={forgotInput}
+                        onChange={(e) => setForgotInput(e.target.value)}
+                        required
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sh-modal-actions">
+                    <button
+                      type="button"
+                      className="sh-modal-cancel-btn"
+                      onClick={closeForgotModal}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="sh-modal-submit-btn"
+                      disabled={forgotLoading}
+                    >
+                      {forgotLoading ? "Sending Link..." : "Send Reset Link"}
+                    </button>
+                  </div>
+                </form>
+
+                <div className="sh-modal-hint-box">
+                  <FaInfoCircle />
+                  <span>
+                    Default admin credentials: Username <strong>admin</strong> | Password <strong>adminpassword</strong>
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="sh-modal-success-state">
+                <FaCheckCircle className="sh-success-check-icon" />
+                <h3>Reset Link Sent!</h3>
+                <p>
+                  We have sent password reset instructions to <strong>{forgotInput || "your email/account"}</strong>. Please check your inbox or contact your workspace admin.
+                </p>
+                <div className="sh-modal-success-credentials">
+                  <p>You can also log in directly using the default credentials:</p>
+                  <div className="sh-cred-row">
+                    <span>Username: <strong>admin</strong></span>
+                    <span>Password: <strong>adminpassword</strong></span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="sh-modal-done-btn"
+                  onClick={() => {
+                    fillDemoAdmin();
+                    closeForgotModal();
+                  }}
+                >
+                  Fill & Return to Sign In
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
