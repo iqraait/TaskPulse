@@ -33,15 +33,15 @@ class UserViewSet(ModelViewSet):
         queryset = User.objects.all().order_by('-id')
 
         if user and user.is_authenticated:
-            role = user.role or ('superadmin' if user.is_superuser else 'staff')
-            if role == 'superadmin':
+            # Global Super Admin check (superadmin role and not bound to a specific department head role)
+            is_pure_superadmin = (user.role == 'superadmin' or user.is_superuser) and user.role != 'dept_admin'
+            if is_pure_superadmin:
                 pass # Super Admin sees all users across all departments
-            elif role in ['dept_admin', 'admin'] and user.department:
-                # Department head sees staff in their own department, EXCLUDING superadmins
-                queryset = queryset.filter(department__iexact=user.department).exclude(Q(role='superadmin') | Q(is_superuser=True))
-            elif role == 'staff' and user.department:
-                # Staff sees staff in their own department, EXCLUDING superadmins
-                queryset = queryset.filter(department__iexact=user.department).exclude(Q(role='superadmin') | Q(is_superuser=True))
+            elif user.department:
+                # Department head / staff sees staff in their own department, EXCLUDING global superadmins
+                queryset = queryset.filter(department__iexact=user.department).exclude(role='superadmin').exclude(is_superuser=True)
+            else:
+                queryset = queryset.filter(Q(id=user.id) | Q(created_by=user))
 
         return queryset
 
@@ -50,8 +50,10 @@ class UserViewSet(ModelViewSet):
         role_requested = self.request.data.get('role', 'staff')
         dept_requested = self.request.data.get('department', '').strip()
 
+        is_pure_superadmin = user and user.is_authenticated and (user.role == 'superadmin' or user.is_superuser) and user.role != 'dept_admin'
+
         # Enforce Role-Based Workflow Rules:
-        if user and user.is_authenticated and not (user.role == 'superadmin' or user.is_superuser):
+        if user and user.is_authenticated and not is_pure_superadmin:
             # Non-superadmins (Department Heads & Staff) can ONLY create 'staff' in their OWN department
             role_requested = 'staff'
             if user.department:

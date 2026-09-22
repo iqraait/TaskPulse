@@ -54,12 +54,14 @@ function Leaderboard() {
     }
   };
 
+  const isPureSuperAdmin = (user?.role === 'superadmin' || user?.is_superuser) && user?.role !== 'dept_admin';
+
   return (
     <div className="app-layout">
       <Sidebar />
 
       <div className="main-content">
-        <Navbar />
+        <Navbar searchVal={searchVal} setSearchVal={setSearchVal} />
 
         <div className="page-container">
           
@@ -68,12 +70,12 @@ function Leaderboard() {
             <div className="header-text">
               <h2>
                 <FaTrophy className="header-icon-gold" />{" "}
-                {user?.role === 'superadmin' || user?.is_superuser 
+                {isPureSuperAdmin 
                   ? "Global Team Performance & Rewards Leaderboard" 
                   : `${user?.department || 'Department'} Team Performance & Rewards Leaderboard`}
               </h2>
               <p>
-                {user?.role === 'superadmin' || user?.is_superuser
+                {isPureSuperAdmin
                   ? "Global overview across all departments. Earn points by completing tasks and daily to-dos!"
                   : `Team performance view for ${user?.department || 'your department'}. Compete with department colleagues by resolving tasks & to-dos!`}
               </p>
@@ -107,7 +109,14 @@ function Leaderboard() {
               </div>
 
               <div className="leaderboard-rows">
-                {leaderboard.map((item) => (
+                {leaderboard.filter(item => {
+                  if (isPureSuperAdmin) return true;
+                  if (item.role === 'superadmin' || item.is_superuser) return false;
+                  if (user?.department && item.department) {
+                    return item.department.trim().toLowerCase() === user.department.trim().toLowerCase();
+                  }
+                  return true;
+                }).map((item) => (
                   <div 
                     key={item.user_id} 
                     className={`leaderboard-row ${item.user_id === user?.id ? "highlight-me" : ""}`}

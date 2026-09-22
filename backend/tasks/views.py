@@ -517,9 +517,12 @@ def leaderboard_stats(request):
 
     all_users = User.objects.all().order_by("id")
 
+    # Global Super Admin check (superadmin role and not bound to a specific department head role)
+    is_pure_superadmin = (role == 'superadmin' or getattr(user, 'is_superuser', False)) and role != 'dept_admin'
+
     # Filter leaderboard for department logins
-    if role != 'superadmin' and not getattr(user, 'is_superuser', False) and getattr(user, 'department', ''):
-        all_users = all_users.filter(department__iexact=user.department).exclude(Q(role='superadmin') | Q(is_superuser=True))
+    if not is_pure_superadmin and getattr(user, 'department', ''):
+        all_users = all_users.filter(department__iexact=user.department).exclude(role='superadmin').exclude(is_superuser=True)
     else:
         # Super admin query parameter filtering
         dept_param = request.query_params.get('department')

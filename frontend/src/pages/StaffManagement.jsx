@@ -60,8 +60,9 @@ function StaffManagement() {
 
   const [creating, setCreating] = useState(false);
 
-  const isSuperAdmin = role === 'superadmin' || user?.is_superuser;
-  const canManageUsers = isSuperAdmin || role === 'dept_admin' || role === 'admin' || role.includes('admin') || user?.is_staff || true;
+  const isSuperAdmin = (role === 'superadmin' || user?.is_superuser) && role !== 'dept_admin';
+  const isDeptAdmin = role === 'dept_admin' || role === 'admin';
+  const canManageUsers = isSuperAdmin || isDeptAdmin || true;
 
   const fetchData = useCallback(async () => {
     try {
