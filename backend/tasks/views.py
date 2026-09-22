@@ -41,15 +41,19 @@ class TaskViewSet(ModelViewSet):
 
             if role == 'superadmin':
                 pass
-            elif role == 'admin':
+            elif role in ['admin', 'dept_admin']:
                 if user.department:
                     queryset = queryset.filter(
-                        Q(department__iexact=user.department) | Q(created_by=user) | Q(assigned_to=user) | Q(assigned_to_secondary=user)
-                    )
+                        Q(department__iexact=user.department) | Q(created_by=user) | Q(assigned_to=user) | Q(assigned_to_secondary=user) | Q(previous_assigned_to=user)
+                    ).distinct()
                 else:
-                    queryset = queryset.filter(Q(created_by=user) | Q(assigned_to=user) | Q(assigned_to_secondary=user))
+                    queryset = queryset.filter(
+                        Q(created_by=user) | Q(assigned_to=user) | Q(assigned_to_secondary=user) | Q(previous_assigned_to=user)
+                    ).distinct()
             else:
-                queryset = queryset.filter(Q(created_by=user) | Q(assigned_to=user) | Q(assigned_to_secondary=user))
+                queryset = queryset.filter(
+                    Q(created_by=user) | Q(assigned_to=user) | Q(assigned_to_secondary=user) | Q(previous_assigned_to=user)
+                ).distinct()
 
         # Additional URL Query Filter Parameters
         status_param = self.request.query_params.get("status")
@@ -67,7 +71,7 @@ class TaskViewSet(ModelViewSet):
             queryset = queryset.filter(department__iexact=department)
 
         if assigned:
-            queryset = queryset.filter(Q(assigned_to_id=assigned) | Q(assigned_to_secondary_id=assigned))
+            queryset = queryset.filter(Q(assigned_to_id=assigned) | Q(assigned_to_secondary_id=assigned) | Q(previous_assigned_to_id=assigned))
 
         if priority:
             queryset = queryset.filter(priority=priority)
@@ -76,7 +80,9 @@ class TaskViewSet(ModelViewSet):
             queryset = queryset.filter(category=category)
 
         if my_tasks and user and user.is_authenticated:
-            queryset = queryset.filter(Q(assigned_to=user) | Q(assigned_to_secondary=user) | Q(created_by=user))
+            queryset = queryset.filter(
+                Q(assigned_to=user) | Q(assigned_to_secondary=user) | Q(created_by=user) | Q(previous_assigned_to=user)
+            ).distinct()
 
         if search:
             queryset = queryset.filter(
@@ -156,6 +162,12 @@ class TaskViewSet(ModelViewSet):
         if old_assignee != task.assigned_to:
             from_name = old_assignee.username if old_assignee else "Unassigned"
             to_name = task.assigned_to.username if task.assigned_to else "Unassigned"
+
+            if old_assignee:
+                task.previous_assigned_to = old_assignee
+                task.status = 'reassigned'
+                task.save(update_fields=['previous_assigned_to', 'status'])
+
             TaskFlowLog.objects.create(
                 task=task,
                 actor=user,
@@ -165,9 +177,18 @@ class TaskViewSet(ModelViewSet):
             if task.assigned_to and task.assigned_to != user:
                 create_user_notification(
                     user=task.assigned_to,
-                    title=f"Ticket Reassigned: [{ticket_code_str}]",
-                    message=f"Ticket '{task.title}' was reassigned to you by {user.username}.",
+                    title=f"Ticket Reassigned to You: [{ticket_code_str}]",
+                    message=f"Ticket '{task.title}' was reassigned to you from {from_name} by {user.username}.",
                     notification_type="task_assigned",
+                    target_id=task.id,
+                    link="/tasks"
+                )
+            if old_assignee and old_assignee != user:
+                create_user_notification(
+                    user=old_assignee,
+                    title=f"Ticket Reassigned: [{ticket_code_str}]",
+                    message=f"Ticket '{task.title}' was reassigned to {to_name}. It remains in your directory marked as Reassigned.",
+                    notification_type="task_updated",
                     target_id=task.id,
                     link="/tasks"
                 )

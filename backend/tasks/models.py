@@ -14,6 +14,7 @@ class Task(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('progress', 'In Progress'),
+        ('reassigned', 'Reassigned'),
         ('done', 'Done'),
         ('closed', 'Closed')
     )
@@ -50,6 +51,15 @@ class Task(models.Model):
         null=True,
         blank=True,
         related_name='assigned_tasks'
+    )
+
+    # Previous Assignee (Track staff who reassigned/passed task)
+    previous_assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='previously_assigned_tasks'
     )
 
     # Secondary Assignee (Option to assign 2 staff members)

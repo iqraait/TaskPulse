@@ -26,6 +26,7 @@ class TaskFlowLogSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     assigned_to_username = serializers.SerializerMethodField()
     assigned_to_secondary_username = serializers.SerializerMethodField()
+    previous_assigned_to_username = serializers.SerializerMethodField()
     created_by_username = serializers.SerializerMethodField()
     is_reassigned = serializers.SerializerMethodField()
     comments = CommentSerializer(many=True, read_only=True)
@@ -39,6 +40,7 @@ class TaskSerializer(serializers.ModelSerializer):
             'closure_reason', 'attachment', 'is_reassigned',
             'created_by', 'created_by_username',
             'assigned_to', 'assigned_to_username',
+            'previous_assigned_to', 'previous_assigned_to_username',
             'assigned_to_secondary', 'assigned_to_secondary_username',
             'created_at', 'due_date', 'comments', 'flow_logs'
         ]
@@ -50,11 +52,14 @@ class TaskSerializer(serializers.ModelSerializer):
     def get_assigned_to_secondary_username(self, obj):
         return obj.assigned_to_secondary.username if obj.assigned_to_secondary else None
 
+    def get_previous_assigned_to_username(self, obj):
+        return obj.previous_assigned_to.username if obj.previous_assigned_to else None
+
     def get_created_by_username(self, obj):
         return obj.created_by.username if obj.created_by else "System"
 
     def get_is_reassigned(self, obj):
-        return obj.flow_logs.filter(action_type="reassigned").exists()
+        return obj.status == 'reassigned' or obj.previous_assigned_to is not None or obj.flow_logs.filter(action_type="reassigned").exists()
 
 
 class TodoItemSerializer(serializers.ModelSerializer):
