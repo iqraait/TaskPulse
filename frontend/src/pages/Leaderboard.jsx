@@ -23,6 +23,7 @@ function Leaderboard() {
   const { user } = useAuth();
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchVal, setSearchVal] = useState("");
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
