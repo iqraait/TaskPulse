@@ -37,10 +37,11 @@ class UserViewSet(ModelViewSet):
             if role == 'superadmin':
                 pass # Super Admin sees all users across all departments
             elif role in ['dept_admin', 'admin'] and user.department:
-                # Department head sees staff in their own department + themselves
-                queryset = queryset.filter(Q(department__iexact=user.department) | Q(id=user.id))
+                # Department head sees staff in their own department, EXCLUDING superadmins
+                queryset = queryset.filter(department__iexact=user.department).exclude(Q(role='superadmin') | Q(is_superuser=True))
             elif role == 'staff' and user.department:
-                queryset = queryset.filter(department__iexact=user.department)
+                # Staff sees staff in their own department, EXCLUDING superadmins
+                queryset = queryset.filter(department__iexact=user.department).exclude(Q(role='superadmin') | Q(is_superuser=True))
 
         return queryset
 

@@ -508,10 +508,24 @@ def public_ticket_schedule(request):
 @permission_classes([IsAuthenticated])
 def leaderboard_stats(request):
     """
-    Common Gamified Performance & Rewards Leaderboard accessible to ALL users without restriction.
-    Calculates points, levels, completed tasks, and completed daily todos.
+    Department-filtered & Global Gamified Performance & Rewards Leaderboard.
+    Department login users see ONLY their department staff and leaderboard metrics.
+    Super admin can see full system leaderboard or filter by department.
     """
+    user = request.user
+    role = getattr(user, 'role', '') or ('superadmin' if getattr(user, 'is_superuser', False) else 'staff')
+
     all_users = User.objects.all().order_by("id")
+
+    # Filter leaderboard for department logins
+    if role != 'superadmin' and not getattr(user, 'is_superuser', False) and getattr(user, 'department', ''):
+        all_users = all_users.filter(department__iexact=user.department).exclude(Q(role='superadmin') | Q(is_superuser=True))
+    else:
+        # Super admin query parameter filtering
+        dept_param = request.query_params.get('department')
+        if dept_param:
+            all_users = all_users.filter(department__iexact=dept_param)
+
     leaderboard = []
 
     for u in all_users:

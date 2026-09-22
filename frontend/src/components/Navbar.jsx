@@ -52,7 +52,7 @@ function Navbar({ searchVal = "", setSearchVal = () => {} }) {
           <FaCrown style={{ fontSize: '9px' }} /> Super Admin
         </span>
       );
-    } else if (role === 'admin') {
+    } else if (role === 'admin' || role === 'dept_admin') {
       return (
         <span className="badge badge-admin">
           <FaUserShield style={{ fontSize: '9px' }} /> Dept Admin

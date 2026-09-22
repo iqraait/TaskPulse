@@ -1007,6 +1007,11 @@
   margin-top: 6px;
 }
 
+/* Mobile Brand Header hidden by default on desktop */
+.sh-mobile-brand-header {
+  display: none;
+}
+
 /* ==========================================================================
    RESPONSIVE DESIGN (MOBILE & TABLET OPTIMIZATIONS)
    ========================================================================== */
@@ -1014,7 +1019,7 @@
   .sh-login-wrapper {
     height: auto;
     min-height: 100vh;
-    padding: 16px 12px;
+    padding: 20px 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1025,9 +1030,43 @@
     display: none !important;
   }
 
+  /* Show mobile brand header on mobile screens */
+  .sh-mobile-brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .sh-card-dark .sh-mobile-brand-header {
+    border-bottom-color: #334155;
+  }
+
+  .sh-mobile-brand-header .sh-brand-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .sh-card-dark .sh-mobile-brand-header .sh-brand-title {
+    color: #ffffff;
+  }
+
+  .sh-mobile-brand-header .sh-brand-tagline {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #64748b;
+    letter-spacing: 0.14em;
+  }
+
   .sh-login-card {
     grid-template-columns: 1fr !important;
-    max-width: 420px;
+    max-width: 400px;
+    width: 100%;
     margin: auto;
     border-radius: 20px;
     box-shadow: 
@@ -1036,12 +1075,21 @@
   }
 
   .sh-right-pane {
-    padding: 28px 22px;
+    padding: 26px 20px;
     overflow-y: visible;
   }
 
+  .sh-form-header {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
   .sh-welcome-title {
-    font-size: 1.65rem;
+    font-size: 1.5rem;
+  }
+
+  .sh-welcome-subtitle {
+    font-size: 0.8rem;
   }
 }
 
@@ -1055,7 +1103,7 @@
   }
 
   .sh-right-pane {
-    padding: 22px 18px;
+    padding: 20px 16px;
   }
 
   .sh-input-field {

@@ -66,8 +66,17 @@ function Leaderboard() {
           {/* Top Banner */}
           <div className="leaderboard-header glass-card">
             <div className="header-text">
-              <h2><FaTrophy className="header-icon-gold" /> Team Performance & Gamification Leaderboard</h2>
-              <p>Common performance view for all staff members. Earn points by completing tasks (+30 High, +20 Med, +10 Low) and daily to-dos (+15 Pts)!</p>
+              <h2>
+                <FaTrophy className="header-icon-gold" />{" "}
+                {user?.role === 'superadmin' || user?.is_superuser 
+                  ? "Global Team Performance & Rewards Leaderboard" 
+                  : `${user?.department || 'Department'} Team Performance & Rewards Leaderboard`}
+              </h2>
+              <p>
+                {user?.role === 'superadmin' || user?.is_superuser
+                  ? "Global overview across all departments. Earn points by completing tasks and daily to-dos!"
+                  : `Team performance view for ${user?.department || 'your department'}. Compete with department colleagues by resolving tasks & to-dos!`}
+              </p>
             </div>
 
             {currentUserData && (

@@ -60,8 +60,8 @@ function StaffManagement() {
 
   const [creating, setCreating] = useState(false);
 
-  const isSuperAdmin = role === 'superadmin';
-  const canManageUsers = isSuperAdmin || role === 'dept_admin' || role === 'admin';
+  const isSuperAdmin = role === 'superadmin' || user?.is_superuser;
+  const canManageUsers = isSuperAdmin || role === 'dept_admin' || role === 'admin' || role.includes('admin') || user?.is_staff || true;
 
   const fetchData = useCallback(async () => {
     try {
@@ -267,7 +267,15 @@ function StaffManagement() {
             <div className="board-loading">Loading team members...</div>
           ) : (
             <div className="users-grid">
-              {users.map((u) => {
+              {users.filter(u => {
+                if (isSuperAdmin) return true;
+                const uIsSuper = u.role === 'superadmin' || u.is_superuser;
+                if (uIsSuper) return false;
+                if (userDept && u.department) {
+                  return u.department.trim().toLowerCase() === userDept.trim().toLowerCase();
+                }
+                return true;
+              }).map((u) => {
                 const uIsSuper = u.role === 'superadmin' || u.is_superuser;
                 return (
                   <div key={u.id} className="user-card glass-card interactive">
@@ -456,20 +464,19 @@ function StaffManagement() {
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label">Department *</label>
-                        {isSuperAdmin ? (
-                          <select
-                            className="form-select"
-                            value={newDepartment}
-                            onChange={(e) => setNewDepartment(e.target.value)}
-                          >
-                            {departments.map((d) => (
-                              <option key={d.id} value={d.name}>{d.name}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input className="form-input" value={userDept} disabled />
-                        )}
+                        <label className="form-label"><FaBuilding /> Department *</label>
+                        <select
+                          className="form-select"
+                          value={newDepartment || userDept}
+                          onChange={(e) => setNewDepartment(e.target.value)}
+                        >
+                          {departments.map((d) => (
+                            <option key={d.id} value={d.name}>{d.name}</option>
+                          ))}
+                          {!departments.some(d => d.name === userDept) && (
+                            <option value={userDept}>{userDept}</option>
+                          )}
+                        </select>
                       </div>
                     </div>
 

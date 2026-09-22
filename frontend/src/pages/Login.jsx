@@ -230,6 +230,17 @@ function Login() {
 
           {/* Form Header */}
           <div className="sh-form-header">
+            {/* Mobile Brand Header */}
+            <div className="sh-mobile-brand-header">
+              <div className="sh-brand-icon-box">
+                <span className="sh-brand-letter">T</span>
+              </div>
+              <div className="sh-brand-text">
+                <h1 className="sh-brand-title">TaskPulse Pro</h1>
+                <span className="sh-brand-tagline">TASK • TRACK • RESOLVE</span>
+              </div>
+            </div>
+
             <h2 className="sh-welcome-title">Welcome Back</h2>
             <p className="sh-welcome-subtitle">
               Sign in to access your support command center & active tasks.
