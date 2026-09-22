@@ -14,38 +14,36 @@ git add .
 git commit -m "Auto-deploy update to AWS"
 git push origin main
 
-# Step 2: SSH into AWS EC2 server and pull/restart
-Write-Host "`n2. SSH connecting to AWS Server ($AWS_IP) using key..." -ForegroundColor Green
+# Step 2: Build frontend bundle locally
+Write-Host "`n2. Building frontend production bundle locally..." -ForegroundColor Green
+Set-Location "$PSScriptRoot\frontend"
+cmd /c "npm run build"
+Set-Location "$PSScriptRoot"
 
-ssh -i "$PEM_PATH" -o ConnectTimeout=10 -o StrictHostKeyChecking=no "ubuntu@$AWS_IP" @"
-  echo 'Connected to AWS Server...'
-  cd /var/www/TaskPulse || cd ~/TaskPulse || cd ~/todo-team-app || exit
-  
-  echo '1. Pulling latest git code...'
+# Step 3: Upload frontend dist folder to AWS
+Write-Host "`n3. Uploading compiled frontend dist to AWS server..." -ForegroundColor Green
+scp -i "$PEM_PATH" -o StrictHostKeyChecking=no -r "$PSScriptRoot\frontend\dist\*" "ubuntu@${AWS_IP}:/home/ubuntu/TaskPulse/frontend/dist/"
+
+# Step 4: SSH into AWS EC2 server, pull backend code & restart backend
+Write-Host "`n4. Updating backend code & restarting server on AWS..." -ForegroundColor Green
+
+ssh -i "$PEM_PATH" -o ConnectTimeout=15 -o StrictHostKeyChecking=no "ubuntu@$AWS_IP" "bash -c '
+  cd /home/ubuntu/TaskPulse || exit 1
+  echo \"1. Pulling latest code...\"
   git pull origin main
-  
-  echo '2. Applying Django backend migrations...'
-  if [ -d "backend" ]; then
-    cd backend
-    source venv/bin/activate || true
-    python manage.py migrate
-    cd ..
-  fi
 
-  echo '3. Building Vite frontend...'
-  if [ -d "frontend" ]; then
-    cd frontend
-    npm install
-    npm run build
-    cd ..
-  fi
+  echo \"2. Restarting Django backend...\"
+  cd /home/ubuntu/TaskPulse/backend
+  source venv/bin/activate
+  python manage.py migrate
+  pkill -f \"manage.py runserver\" || true
+  sleep 1
+  nohup python manage.py runserver 0.0.0.0:8000 > /dev/null 2>&1 &
 
-  echo '4. Restarting backend services & Nginx...'
-  sudo systemctl restart gunicorn || sudo systemctl restart taskpulse || pm2 restart all || true
-  sudo systemctl restart nginx || true
-  
-  echo '✅ AWS Deployment Completed Successfully!'
-"@
+  echo \"3. Reloading Nginx...\"
+  sudo systemctl reload nginx || sudo systemctl restart nginx || true
+  echo \"✅ AWS Server Update Completed Successfully!\"
+'"
 
 Write-Host "`n=============================================" -ForegroundColor Cyan
 Write-Host "🎉 AWS Server Deployed Successfully! Live at http://$AWS_IP:800" -ForegroundColor Green
